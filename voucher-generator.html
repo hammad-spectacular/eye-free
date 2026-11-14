@@ -303,6 +303,7 @@
     .btn-primary { background: var(--gradient); border: none; color: #fff; }
     .btn-danger { background: var(--danger); border: none; color: #fff; }
     .btn-sm { height: auto; padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 7px; }
+    .btn-busy-label { font-weight: 600; opacity: 0.85; }
 
     .table-wrap { overflow-x: auto; }
     table.data {
@@ -893,6 +894,39 @@
     toastTimer = setTimeout(() => el.remove(), 4200);
   }
 
+  /**
+   * Runs an async action with the button locked and spinning, so a slow save
+   * or generate can never be fired twice and the click always gets feedback.
+   * The button's own disabled state is restored afterwards, not forced open.
+   */
+  async function withLoading(btn, label, work) {
+    if (!btn || btn.dataset.busy === '1') return undefined;
+    const wasDisabled = btn.disabled;
+    // The spinner and label are added NEXT TO the button's own content, never
+    // by replacing innerHTML: some buttons carry live elements inside them
+    // (the challan counter spans), and wiping them breaks the page mid-save.
+    const spinner = document.createElement('i');
+    spinner.className = 'fa-solid fa-spinner fa-spin';
+    spinner.setAttribute('aria-hidden', 'true');
+    const tag = document.createElement('span');
+    tag.className = 'btn-busy-label';
+    tag.textContent = label || 'Working…';
+    btn.dataset.busy = '1';
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.prepend(spinner, document.createTextNode(' '));
+    btn.append(document.createTextNode(' '), tag);
+    try {
+      return await work();
+    } finally {
+      delete btn.dataset.busy;
+      btn.disabled = wasDisabled;
+      btn.removeAttribute('aria-busy');
+      spinner.remove();
+      tag.remove();
+    }
+  }
+
   // --- Branding (kept on the server for a school, in the browser for the demo) --
 
   let branding = { ...DEFAULTS };
@@ -1460,7 +1494,7 @@
       acInput.addEventListener('input', () => { state.collect.paidAC = acInput.value; });
     }
     const payBtn = $('btnPay');
-    if (payBtn) payBtn.addEventListener('click', takePayment);
+    if (payBtn) payBtn.addEventListener('click', () => withLoading(payBtn, 'Saving payment…', takePayment));
     const printBtn = $('btnPrintReceipt');
     if (printBtn) printBtn.addEventListener('click', printReceipt);
   }
@@ -1522,7 +1556,7 @@
       if (!voucher) return;
       if (!confirm(`Are you sure you want to REVERSE voucher #${voucher.id} for ${voucher.studentName}? This will undo any payment.`)) return;
       try {
-        const res = await api.reverseVoucher(id);
+        const res = await withLoading(btn, 'Reversing…', () => api.reverseVoucher(id));
         toast(res ? `Voucher #${id} reversed (${money(res.takenBack)} taken back).` : 'Nothing to reverse.', res ? 'ok' : '');
         loadVouchers();
       } catch (err) {
@@ -1531,7 +1565,7 @@
     }
   });
 
-  $('btnPrintBulk').addEventListener('click', async () => {
+  $('btnPrintBulk').addEventListener('click', (e) => withLoading(e.currentTarget, 'Preparing challans…', async () => {
     const list = filteredVouchers();
     if (list.length === 0) {
       if (!confirm(`No vouchers found for ${state.month} ${state.year}. Generate them now?`)) return;
@@ -1551,7 +1585,7 @@
     setPrintPage('landscape', '5mm');
     renderChallans();
     setTimeout(() => window.print(), 150);
-  });
+  }));
 
   $('btnBulkCharge').addEventListener('click', () => {
     const panel = $('bulkChargePanel');
@@ -1582,7 +1616,7 @@
 
   $('bulkChargeScope').addEventListener('change', updateBulkChargeTargets);
 
-  $('btnApplyBulkCharge').addEventListener('click', async () => {
+  $('btnApplyBulkCharge').addEventListener('click', (e) => withLoading(e.currentTarget, 'Adding charge…', async () => {
     const label = $('bulkChargeLabel').value.trim();
     const amount = parseFloat($('bulkChargeAmount').value);
     if (!label) { toast('Give the charge a name.', 'err'); return; }
@@ -1599,7 +1633,7 @@
     } catch (err) {
       toast(err.message || 'The charge could not be added.', 'err');
     }
-  });
+  }));
 
   $('btnConfig').addEventListener('click', () => {
     const panel = $('configPanel');
@@ -1651,7 +1685,7 @@
     });
   }
 
-  $('btnSaveSettings').addEventListener('click', async () => {
+  $('btnSaveSettings').addEventListener('click', (e) => withLoading(e.currentTarget, 'Saving settings…', async () => {
     state.feeSettings = await api.saveSettings({
       dueDays: $('dueDays').value,
       lateFine: $('lateFine').value
@@ -1669,7 +1703,7 @@
 
     toast(`Fee settings saved.${dropped ? ` ${plural(dropped, 'saved charge')} left out for having no name or amount.` : ''}`, 'ok');
     loadVouchers();
-  });
+  }));
 
   $('logoInput').addEventListener('change', (e) => {
     const file = e.target.files?.[0];
@@ -1694,14 +1728,14 @@
     toast('Logo removed.');
   });
 
-  $('btnResetDemo').addEventListener('click', async () => {
+  $('btnResetDemo').addEventListener('click', (e) => withLoading(e.currentTarget, 'Resetting…', async () => {
     if (!confirm('Clear every demo voucher, receipt and payment, and start again?')) return;
     await api.hardReset();
     state.collect = { voucher: null, receipt: null, paidTuition: '', paidAC: '0', waiveFine: false, advance: false };
     renderCollect();
     loadVouchers();
     toast('Demo data reset.', 'ok');
-  });
+  }));
 
   // Charges modal
   function renderChargesModal() {
@@ -1792,7 +1826,7 @@
       modal.remove();
     });
 
-    modal.querySelector('#btnSaveCharges').addEventListener('click', async () => {
+    modal.querySelector('#btnSaveCharges').addEventListener('click', (e) => withLoading(e.currentTarget, 'Saving charges…', async () => {
       try {
         await api.setCharges(voucher.id, collectCharges());
         state.chargesFor = null;
@@ -1802,7 +1836,7 @@
       } catch (err) {
         toast(err.message || 'The charges could not be saved.', 'err');
       }
-    });
+    }));
 
     modal.addEventListener('click', (e) => {
       if (e.target === modal) { state.chargesFor = null; modal.remove(); }
@@ -1810,31 +1844,33 @@
   }
 
   // Collect form
-  $('collectForm').addEventListener('submit', async (e) => {
+  $('collectForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const term = $('collectSearch').value;
-    const found = await searchVouchers(term);
-    const box = $('collectSuggestions');
-    if (found.length === 0) {
+    withLoading(e.target.querySelector('button[type="submit"]'), 'Searching…', async () => {
+      const term = $('collectSearch').value;
+      const found = await searchVouchers(term);
+      const box = $('collectSuggestions');
+      if (found.length === 0) {
+        box.style.display = 'block';
+        box.innerHTML = `<div class="hint">No voucher matches "${escapeHtml(term)}".</div>`;
+        return;
+      }
+      if (found.length === 1) {
+        box.style.display = 'none';
+        openVoucher(found[0]);
+        return;
+      }
       box.style.display = 'block';
-      box.innerHTML = `<div class="hint">No voucher matches "${escapeHtml(term)}".</div>`;
-      return;
-    }
-    if (found.length === 1) {
-      box.style.display = 'none';
-      openVoucher(found[0]);
-      return;
-    }
-    box.style.display = 'block';
-    box.innerHTML = `<div class="hint" style="margin-bottom: 0.5rem;">Pick a record:</div>`
-      + found.map((f) => `<button class="btn btn-sm" data-pick="${f.id}" style="margin: 0.2rem; width: 100%; justify-content: space-between;">
-          <span>#${f.id} · ${escapeHtml(f.studentName ?? '')}</span>
-          <span>${escapeHtml(f.className ?? '')} · ${escapeHtml(f.month)} ${escapeHtml(f.year)} · ${money(f.balanceDue ?? 0)}</span>
-        </button>`).join('');
-    box.querySelectorAll('[data-pick]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const voucher = (await api.listFees({})).find((v) => String(v.id) === btn.dataset.pick);
-        if (voucher) { box.style.display = 'none'; openVoucher(voucher); }
+      box.innerHTML = `<div class="hint" style="margin-bottom: 0.5rem;">Pick a record:</div>`
+        + found.map((f) => `<button class="btn btn-sm" data-pick="${f.id}" style="margin: 0.2rem; width: 100%; justify-content: space-between;">
+            <span>#${f.id} · ${escapeHtml(f.studentName ?? '')}</span>
+            <span>${escapeHtml(f.className ?? '')} · ${escapeHtml(f.month)} ${escapeHtml(f.year)} · ${money(f.balanceDue ?? 0)}</span>
+          </button>`).join('');
+      box.querySelectorAll('[data-pick]').forEach((btn) => {
+        btn.addEventListener('click', () => withLoading(btn, 'Opening…', async () => {
+          const voucher = (await api.listFees({})).find((v) => String(v.id) === btn.dataset.pick);
+          if (voucher) { box.style.display = 'none'; openVoucher(voucher); }
+        }));
       });
     });
   });
