@@ -667,8 +667,11 @@
         </div>
       </div>
       <div class="filter-actions">
-        <button class="btn btn-primary" id="btnPrintBulk">
-          <i class="fa-solid fa-print"></i> Print Class <span id="countBulkNoun">Challans</span> (<span id="countBulk">0</span>)
+        <button class="btn btn-primary" id="btnGenerate">
+          <i class="fa-solid fa-file-circle-plus"></i> Generate Vouchers
+        </button>
+        <button class="btn" id="btnPrintBulk">
+          <i class="fa-solid fa-print"></i> Print <span id="countBulkNoun">Challans</span> (<span id="countBulk">0</span>)
         </button>
       </div>
     </div>
@@ -694,8 +697,8 @@
         </div>
       </div>
       <p class="hint" style="margin-top: 0.6rem;">
-        Branding is saved in this browser for the demo. When this is integrated it moves to the school record,
-        so every cashier prints the same challan.
+        Saved charges, bank details and footer notes are stored with the school's fee settings,
+        so every device and admin session prints the same challan.
       </p>
     </div>
 
@@ -857,15 +860,10 @@
     paymentMethods: '1. CASH DEPOSIT AT ALL BRANCHES OF THE MENTIONED BANK.\n2. ONLINE VIA MOBILE BANKING OR ATM.',
     challanNote: 'Fine is imposed to maintain discipline. Amount of fine is donated as charity.',
     logo: '',
-    // Saved charges you can apply in one click. classId '' means every class.
-    chargePresets: [
-      { id: 'exam', label: 'Examination Fee', amount: 1500, classId: '' },
-      { id: 'admission', label: 'Admission Fee', amount: 5000, classId: '' },
-      { id: 'sports', label: 'Sports Fee', amount: 800, classId: '' },
-      { id: 'library', label: 'Library Fee', amount: 300, classId: '' },
-      { id: 'computer', label: 'Computer Fee', amount: 600, classId: '' },
-      { id: 'transport', label: 'Transport Fee', amount: 800, classId: '1' }
-    ]
+    // Saved charges start EMPTY on purpose: anything listed here is billed to
+    // students automatically when vouchers are generated, so examples must
+    // never appear as if the school had configured them.
+    chargePresets: []
   };
 
   // --- Small helpers -------------------------------------------------------
@@ -1565,21 +1563,27 @@
     }
   });
 
+  // Generate writes the vouchers to the database; Print only lays out what is shown.
+  $('btnGenerate').addEventListener('click', (e) => withLoading(e.currentTarget, 'Generating vouchers…', async () => {
+    const scope = state.classId === 'all' ? 'the whole school' : (classNameOf(state.classId) || 'the selected class');
+    try {
+      const res = await api.generateFees({ month: state.month, year: state.year, classId: state.classId });
+      toast(res.count > 0
+        ? `${plural(res.count, 'voucher')} generated for ${state.month} ${state.year} (${scope}).`
+        : `Every student in ${scope} already has a ${state.month} ${state.year} voucher.`,
+        res.count > 0 ? 'ok' : '');
+      await loadVouchers();
+    } catch (err) {
+      toast(err.message || 'The vouchers could not be generated.', 'err');
+    }
+  }));
+
   $('btnPrintBulk').addEventListener('click', (e) => withLoading(e.currentTarget, 'Preparing challans…', async () => {
     const list = filteredVouchers();
     if (list.length === 0) {
-      if (!confirm(`No vouchers found for ${state.month} ${state.year}. Generate them now?`)) return;
-      let res;
-      try {
-        res = await api.generateFees({ month: state.month, year: state.year, classId: state.classId });
-      } catch (err) {
-        toast(err.message || 'The vouchers could not be generated.', 'err');
-        return;
-      }
-      toast(`${plural(res.count, 'voucher')} generated for ${state.month} ${state.year}.`, 'ok');
-      await loadVouchers();
-      list.push(...filteredVouchers());
-      if (list.length === 0) return;
+      const where = state.classId === 'all' ? '' : ` in ${classNameOf(state.classId) || state.classId}`;
+      toast(`No vouchers to print for ${state.month} ${state.year}${where}. Generate them first.`, 'err');
+      return;
     }
     state.printTargetId = -1;
     setPrintPage('landscape', '5mm');
@@ -1700,6 +1704,11 @@
     savePresets(kept);
     $('presetDraft').value = JSON.stringify(kept);
     renderPresetEditor();
+
+    // Save settings means save NOW: do not leave the challan setup waiting on
+    // the typing debounce, or a refresh a moment later would lose it.
+    clearTimeout(brandingTimer);
+    Promise.resolve(api.saveBranding(branding)).catch(() => {});
 
     toast(`Fee settings saved.${dropped ? ` ${plural(dropped, 'saved charge')} left out for having no name or amount.` : ''}`, 'ok');
     loadVouchers();

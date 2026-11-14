@@ -182,6 +182,27 @@ function createFeeRouter({ pool, requireAuth }) {
     return E.withBalances(vouchers, db.fees, students, db.settings)
   }
 
+  /**
+   * The saved challan charges that apply to this student: every school-wide
+   * preset plus the ones scoped to the student's class. A preset whose name
+   * is already a monthly charge (the transport fee, say) is not repeated.
+   */
+  function presetChargesFor(db, student) {
+    const presets = Array.isArray(db.branding?.chargePresets) ? db.branding.chargePresets : []
+    const taken = new Set((student.monthlyCharges ?? []).map((c) => String(c.label).toLowerCase()))
+    const out = []
+    for (const p of presets) {
+      const label = String(p?.label ?? '').trim()
+      const amount = num(p?.amount)
+      if (!label || !(amount > 0) || taken.has(label.toLowerCase())) continue
+      const scope = p?.classId == null ? '' : String(p.classId)
+      if (scope !== '' && scope !== String(student.classId)) continue
+      taken.add(label.toLowerCase())
+      out.push({ label, amount })
+    }
+    return out
+  }
+
   // --------------------------------------------------------------------------
   // Writing back
   // --------------------------------------------------------------------------
@@ -405,8 +426,9 @@ function createFeeRouter({ pool, requireAuth }) {
         let made = 0
         for (const student of targets) {
           if (alreadyBilled.has(String(student.id))) continue
+          const extra = presetChargesFor(db, student)
           const voucher = E.newVoucher(
-            student,
+            extra.length ? { ...student, monthlyCharges: [...(student.monthlyCharges ?? []), ...extra] } : student,
             E.classLabel(classes.get(String(student.classId)), student.classId),
             month,
             year,

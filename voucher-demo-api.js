@@ -251,11 +251,30 @@
       const dueDate = new Date(issued.getTime() + db.settings.dueDays * 24 * 60 * 60 * 1000);
       const classes = classesById();
 
+      // Saved challan charges apply at generation, scoped to all classes or one.
+      let presets = [];
+      try { presets = api.branding().chargePresets ?? []; } catch (err) { presets = []; }
+      const presetChargesFor = (student) => {
+        const taken = new Set((student.monthlyCharges ?? []).map((c) => String(c.label).toLowerCase()));
+        const out = [];
+        for (const p of Array.isArray(presets) ? presets : []) {
+          const label = String(p?.label ?? '').trim();
+          const amount = Number(p?.amount);
+          if (!label || !(amount > 0) || taken.has(label.toLowerCase())) continue;
+          const scope = p?.classId == null ? '' : String(p.classId);
+          if (scope !== '' && scope !== String(student.classId)) continue;
+          taken.add(label.toLowerCase());
+          out.push({ label, amount });
+        }
+        return out;
+      };
+
       let count = 0;
       for (const student of targets) {
         if (alreadyBilled.has(String(student.id))) continue;
+        const extra = presetChargesFor(student);
         const voucher = E.newVoucher(
-          student,
+          extra.length ? { ...student, monthlyCharges: [...(student.monthlyCharges ?? []), ...extra] } : student,
           E.classLabel(classes.get(String(student.classId)), student.classId),
           m,
           y,
