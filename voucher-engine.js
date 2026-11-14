@@ -290,6 +290,18 @@
   const findStudent = (db, id) => db.students.find((s) => String(s.id) === String(id)) ?? null;
   const findClass = (db, id) => db.classes.find((c) => String(c.id) === String(id)) ?? null;
 
+  /**
+   * Brings every voucher's status back in step with the money on it.
+   * A payment changes the amounts, and the status has to follow, or the list
+   * would keep calling a paid voucher "Unpaid".
+   */
+  function refreshStatuses(db) {
+    for (const v of db.fees) {
+      const next = voucherStatus(v);
+      if (v.status !== next) v.status = next;
+    }
+  }
+
   /** A voucher with nothing received on it yet. */
   const nothingReceived = (v) => num(v.paidTuition) <= 0 && num(v.paidAC) <= 0 && num(v.totalReceived) <= 0;
 
@@ -429,6 +441,9 @@
       if (student) student.paidAnnualCharges = num(student.paidAnnualCharges) + num(input.paidAC);
     }
 
+    // The money has landed, so the vouchers it landed on are no longer unpaid.
+    refreshStatuses(db);
+
     const receipt = {
       id: nextId(db, 'payment'),
       voucherId: target.id,
@@ -493,6 +508,10 @@
       const student = findStudent(db, receipt.studentId);
       if (student) student.paidAnnualCharges = Math.max(0, num(student.paidAnnualCharges) - receipt.paidAC);
     }
+
+    // The money has gone, so the vouchers it went on are open again.
+    refreshStatuses(db);
+
     return receipt;
   }
 

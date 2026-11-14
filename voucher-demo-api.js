@@ -18,6 +18,7 @@
 
   const E = root.VGEngine;
   const STORAGE_KEY = 'theeye.vg.demo.v1';
+  const BRAND_KEY = 'theeye.vg.branding.v1';
 
   // --- Demo school data ----------------------------------------------------
 
@@ -314,6 +315,23 @@
     /** Receipts, newest first. */
     payments() {
       return [...load().payments].sort((a, b) => b.id - a.id).map((p) => ({ ...p }));
+    },
+
+    /**
+     * The logo, bank details and saved charges used on the printed challan.
+     * A live school keeps these on the server; the demo keeps them in this browser.
+     */
+    branding() {
+      try {
+        const raw = root.localStorage?.getItem(BRAND_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (err) { /* fall through to nothing saved yet */ }
+      return {};
+    },
+
+    saveBranding(next) {
+      try { root.localStorage?.setItem(BRAND_KEY, JSON.stringify(next ?? {})); } catch (err) { /* ignore */ }
+      return next ?? {};
     },
 
     /** Wipes the demo data and starts again. */

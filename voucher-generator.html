@@ -619,9 +619,12 @@
         <h1>Fee Voucher Generator</h1>
         <p>The Eye &mdash; fee challans, collection and receipts</p>
       </div>
-      <span class="demo-pill">Standalone demo</span>
+      <span class="demo-pill" id="dataSourcePill">Connecting&hellip;</span>
     </div>
     <div class="header-actions">
+      <a class="icon-btn" href="/admin.html" title="Back to the admin dashboard" style="text-decoration: none;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Admin
+      </a>
       <button class="icon-btn" id="btnResetDemo" title="Clear the demo data and start again">
         <i class="fa-solid fa-rotate-left"></i> Reset demo
       </button>
@@ -824,13 +827,19 @@
 </main>
 
 <script src="./voucher-engine.js"></script>
+<script src="./voucher-api.js"></script>
 <script src="./voucher-demo-api.js"></script>
 <script>
 (function () {
   'use strict';
 
   const E = window.VGEngine;
-  const api = window.VGDemoApi;
+
+  // The page talks to the real fee service when it answers (signed in, server up)
+  // and falls back to the demo data when it does not, so the screen is never dead.
+  let api = window.VGDemoApi;
+  let LIVE = false;
+  let CLASSES = [];
 
   const BRAND_KEY = 'theeye.vg.branding.v1';
 
@@ -884,20 +893,22 @@
     toastTimer = setTimeout(() => el.remove(), 4200);
   }
 
-  // --- Branding (browser-stored, like the source project) ------------------
+  // --- Branding (kept on the server for a school, in the browser for the demo) --
 
-  function loadBranding() {
-    try {
-      const raw = localStorage.getItem(BRAND_KEY);
-      if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
-    } catch (err) { /* fall through to defaults */ }
-    return { ...DEFAULTS };
-  }
+  let branding = { ...DEFAULTS };
 
-  let branding = loadBranding();
-
+  /** Saves the branding: to the server when live, to the browser in the demo. */
+  let brandingTimer = null;
   function saveBranding() {
-    try { localStorage.setItem(BRAND_KEY, JSON.stringify(branding)); } catch (err) { /* ignore */ }
+    if (!LIVE) {
+      api.saveBranding(branding);
+      return;
+    }
+    // Typing in the settings box sends a lot of keystrokes; wait for a pause.
+    clearTimeout(brandingTimer);
+    brandingTimer = setTimeout(() => {
+      api.saveBranding(branding).catch(() => {});
+    }, 500);
   }
 
   function bindBrand(id, key) {
@@ -926,7 +937,7 @@
 
   /** The name a class shows on screen, for the preset scope dropdown. */
   function classNameOf(classId) {
-    const cls = api.classes().find((c) => String(c.id) === String(classId));
+    const cls = CLASSES.find((c) => String(c.id) === String(classId));
     return cls ? E.classLabel(cls, cls.id) : '';
   }
 
@@ -944,7 +955,7 @@
   /** The preset editor rows inside Challan Config. */
   function renderPresetEditor() {
     const list = $('presetList');
-    const classes = api.classes();
+    const classes = CLASSES;
     const draft = currentDraft();
     list.innerHTML = draft.map((p, i) => `
       <div class="preset-row">
@@ -978,7 +989,7 @@
   function renderScopeOptions(selected = '') {
     const sel = $('bulkChargeScope');
     if (!sel) return;
-    const classes = api.classes();
+    const classes = CLASSES;
     sel.innerHTML = '<option value="">All shown</option>'
       + classes.map((c) => `<option value="${c.id}">${escapeHtml(E.classLabel(c, c.id))}</option>`).join('');
     sel.value = classes.some((c) => String(c.id) === String(selected)) ? String(selected) : '';
@@ -995,7 +1006,7 @@
     vouchers: [],
     printTargetId: null,
     chargesFor: null,
-    feeSettings: api.settings(),
+    feeSettings: { dueDays: E.DEFAULT_DUE_DAYS, lateFine: 0 },
     collect: { voucher: null, receipt: null, paidTuition: '', paidAC: '0', waiveFine: false, advance: false }
   };
 
@@ -1035,7 +1046,7 @@
     yearSel.value = state.year;
 
     const classSel = $('genClass');
-    const classes = api.classes();
+    const classes = CLASSES;
     classSel.innerHTML = '<option value="all">All Classes</option>'
       + classes.map((c) => {
         const label = `${c.name}${c.section ? ' - ' + c.section : ''}`;
@@ -1050,7 +1061,7 @@
         || String(f.studentName ?? '').toLowerCase().includes(state.search.toLowerCase())
         || String(f.fatherName ?? '').toLowerCase().includes(state.search.toLowerCase())
         || String(f.admissionNumber ?? '').toLowerCase().includes(state.search.toLowerCase());
-      const cls = api.classes().find((c) => String(c.id) === String(f.classId));
+      const cls = CLASSES.find((c) => String(c.id) === String(f.classId));
       const label = cls ? `${cls.name}${cls.section ? ' - ' + cls.section : ''}` : (f.className ?? '');
       const matchesClass = state.classId === 'all' || String(label).trim() === String(state.classId).trim()
         || String(f.classId) === String(state.classId);
@@ -1090,8 +1101,13 @@
       : `Goes on ${plural(n, 'voucher')}${scopeName ? ` in ${scopeName}` : ''} of the ${shown} shown (${where}). It is added to what each student owes and shows on the challan.`;
   }
 
-  function loadVouchers() {
-    state.vouchers = api.listFees({ month: state.month, year: state.year });
+  async function loadVouchers() {
+    try {
+      state.vouchers = await api.listFees({ month: state.month, year: state.year });
+    } catch (err) {
+      state.vouchers = [];
+      toast(err.message || 'The vouchers could not be loaded.', 'err');
+    }
     renderVoucherTable();
   }
 
@@ -1250,8 +1266,8 @@
     .map((a) => `${E.periodLabel(a)} ${money(a.amount)}${a.created ? ' (advance)' : ''}`)
     .join(' · ');
 
-  function searchVouchers(term) {
-    const all = api.listFees({});
+  async function searchVouchers(term) {
+    const all = await api.listFees({});
     const q = String(term ?? '').trim().toLowerCase();
     if (!q) return [];
     const exact = all.find((f) => String(f.id) === q);
@@ -1449,11 +1465,11 @@
     if (printBtn) printBtn.addEventListener('click', printReceipt);
   }
 
-  function takePayment() {
+  async function takePayment() {
     const c = state.collect;
     if (!c.voucher) return;
     try {
-      const result = api.receivePayment(c.voucher.id, {
+      const result = await api.receivePayment(c.voucher.id, {
         paidTuition: E.num(c.paidTuition),
         paidAC: E.num(c.paidAC),
         waiveFine: c.waiveFine,
@@ -1461,7 +1477,8 @@
       });
       if (!result) { toast('That voucher could not be found.', 'err'); return; }
       state.collect.receipt = result.receipt;
-      state.collect.voucher = api.listFees({}).find((v) => String(v.id) === String(result.voucher.id)) ?? result.voucher;
+      const all = await api.listFees({});
+      state.collect.voucher = all.find((v) => String(v.id) === String(result.voucher.id)) ?? result.voucher;
       toast(`Receipt #${result.receipt.id} saved for ${result.voucher.studentName}.`, 'ok');
       renderCollect();
       loadVouchers();
@@ -1482,7 +1499,7 @@
   $('genClass').addEventListener('change', (e) => { state.classId = e.target.value; renderVoucherTable(); });
   $('genSearch').addEventListener('input', (e) => { state.search = e.target.value; renderVoucherTable(); });
 
-  $('voucherRows').addEventListener('click', (e) => {
+  $('voucherRows').addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const id = btn.dataset.id;
@@ -1505,7 +1522,7 @@
       if (!voucher) return;
       if (!confirm(`Are you sure you want to REVERSE voucher #${voucher.id} for ${voucher.studentName}? This will undo any payment.`)) return;
       try {
-        const res = api.reverseVoucher(id);
+        const res = await api.reverseVoucher(id);
         toast(res ? `Voucher #${id} reversed (${money(res.takenBack)} taken back).` : 'Nothing to reverse.', res ? 'ok' : '');
         loadVouchers();
       } catch (err) {
@@ -1514,13 +1531,19 @@
     }
   });
 
-  $('btnPrintBulk').addEventListener('click', () => {
+  $('btnPrintBulk').addEventListener('click', async () => {
     const list = filteredVouchers();
     if (list.length === 0) {
       if (!confirm(`No vouchers found for ${state.month} ${state.year}. Generate them now?`)) return;
-      const res = api.generateFees({ month: state.month, year: state.year, classId: state.classId });
+      let res;
+      try {
+        res = await api.generateFees({ month: state.month, year: state.year, classId: state.classId });
+      } catch (err) {
+        toast(err.message || 'The vouchers could not be generated.', 'err');
+        return;
+      }
       toast(`${plural(res.count, 'voucher')} generated for ${state.month} ${state.year}.`, 'ok');
-      loadVouchers();
+      await loadVouchers();
       list.push(...filteredVouchers());
       if (list.length === 0) return;
     }
@@ -1559,7 +1582,7 @@
 
   $('bulkChargeScope').addEventListener('change', updateBulkChargeTargets);
 
-  $('btnApplyBulkCharge').addEventListener('click', () => {
+  $('btnApplyBulkCharge').addEventListener('click', async () => {
     const label = $('bulkChargeLabel').value.trim();
     const amount = parseFloat($('bulkChargeAmount').value);
     if (!label) { toast('Give the charge a name.', 'err'); return; }
@@ -1567,7 +1590,7 @@
     const ids = bulkScopeTargets().map((v) => v.id);
     if (ids.length === 0) { toast('There are no vouchers in the list.', 'err'); return; }
     try {
-      const res = api.addCharge(ids, { label, amount });
+      const res = await api.addCharge(ids, { label, amount });
       toast(`${label} added to ${plural(res.added, 'voucher')}.${res.skipped ? ` ${plural(res.skipped, 'voucher')} skipped (already had it).` : ''}`, 'ok');
       $('bulkChargeLabel').value = '';
       $('bulkChargeAmount').value = '';
@@ -1628,8 +1651,8 @@
     });
   }
 
-  $('btnSaveSettings').addEventListener('click', () => {
-    state.feeSettings = api.saveSettings({
+  $('btnSaveSettings').addEventListener('click', async () => {
+    state.feeSettings = await api.saveSettings({
       dueDays: $('dueDays').value,
       lateFine: $('lateFine').value
     });
@@ -1671,9 +1694,9 @@
     toast('Logo removed.');
   });
 
-  $('btnResetDemo').addEventListener('click', () => {
+  $('btnResetDemo').addEventListener('click', async () => {
     if (!confirm('Clear every demo voucher, receipt and payment, and start again?')) return;
-    api.hardReset();
+    await api.hardReset();
     state.collect = { voucher: null, receipt: null, paidTuition: '', paidAC: '0', waiveFine: false, advance: false };
     renderCollect();
     loadVouchers();
@@ -1769,9 +1792,9 @@
       modal.remove();
     });
 
-    modal.querySelector('#btnSaveCharges').addEventListener('click', () => {
+    modal.querySelector('#btnSaveCharges').addEventListener('click', async () => {
       try {
-        api.setCharges(voucher.id, collectCharges());
+        await api.setCharges(voucher.id, collectCharges());
         state.chargesFor = null;
         modal.remove();
         toast('Charges saved.', 'ok');
@@ -1787,10 +1810,10 @@
   }
 
   // Collect form
-  $('collectForm').addEventListener('submit', (e) => {
+  $('collectForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const term = $('collectSearch').value;
-    const found = searchVouchers(term);
+    const found = await searchVouchers(term);
     const box = $('collectSuggestions');
     if (found.length === 0) {
       box.style.display = 'block';
@@ -1809,8 +1832,8 @@
           <span>${escapeHtml(f.className ?? '')} · ${escapeHtml(f.month)} ${escapeHtml(f.year)} · ${money(f.balanceDue ?? 0)}</span>
         </button>`).join('');
     box.querySelectorAll('[data-pick]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const voucher = api.listFees({}).find((v) => String(v.id) === btn.dataset.pick);
+      btn.addEventListener('click', async () => {
+        const voucher = (await api.listFees({})).find((v) => String(v.id) === btn.dataset.pick);
         if (voucher) { box.style.display = 'none'; openVoucher(voucher); }
       });
     });
@@ -1834,7 +1857,20 @@
 
   // --- Start ---------------------------------------------------------------
 
-  function init() {
+  async function init() {
+    // The real fee service first, the demo data when it cannot be reached.
+    LIVE = !!(window.VGFeeApi && await window.VGFeeApi.probe());
+    api = LIVE ? window.VGFeeApi : window.VGDemoApi;
+
+    try {
+      branding = { ...DEFAULTS, ...(await api.branding()) };
+    } catch (err) {
+      branding = { ...DEFAULTS };
+    }
+    if (!Array.isArray(branding.chargePresets)) branding.chargePresets = [...DEFAULTS.chargePresets];
+
+    CLASSES = await api.classes();
+
     buildFilterOptions();
 
     bindBrand('schoolName', 'schoolName');
@@ -1847,9 +1883,21 @@
     bindBrand('paymentMethods', 'paymentMethods');
     bindBrand('challanNote', 'challanNote');
 
-    state.feeSettings = api.settings();
+    state.feeSettings = await api.settings();
     $('dueDays').value = state.feeSettings.dueDays;
     $('lateFine').value = state.feeSettings.lateFine;
+
+    // Say where the data came from, and how much of it there is.
+    const pill = $('dataSourcePill');
+    if (LIVE) {
+      const students = await api.students();
+      pill.textContent = `Live data · ${students.length} students · ${CLASSES.length} classes`;
+      pill.title = 'These are the real students and classes of your school.';
+      $('btnResetDemo').style.display = 'none';
+    } else {
+      pill.textContent = 'Standalone demo';
+      pill.title = 'The fee service could not be reached, so demo data is shown.';
+    }
 
     renderPresetPicker();
     renderScopeOptions('');
@@ -1859,7 +1907,7 @@
 
     // Land on the right tab when opened from the menu (…/voucher-generator.html#collect).
     tabFromHash();
-    loadVouchers();
+    await loadVouchers();
     renderChallans();
   }
 
@@ -1873,7 +1921,10 @@
   // A link to this page with a different hash does not reload it, so follow it here too.
   window.addEventListener('hashchange', tabFromHash);
 
-  init();
+  init().catch((err) => {
+    console.error(err);
+    toast('The fee page could not start: ' + (err.message || err), 'err');
+  });
 })();
 </script>
 </body>

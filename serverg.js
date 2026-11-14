@@ -14,6 +14,7 @@ const { createFileStore } = require('./timetable/tt2/store')
 const { createPgTt2Store } = require('./timetable/tt2/store.pg.tt2')
 const { createTt2Router } = require('./timetable/tt2/routes')
 const { createFinanceRouter } = require('./finance-routes')
+const { createFeeRouter } = require('./fee-routes')
 
 const app = express()
 app.set('trust proxy', 1)
@@ -475,13 +476,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'))
 })
 
-// --- Fee voucher generator (standalone demo) --------------------------------
-// The page and its two scripts live in the project root, next to the fee APIs
-// they will be wired into once the demo is approved. They are served by name
-// so the browser gets the same files the server works with, and so no whole
-// directory is exposed. The page itself is picked up by the catch-all below.
+// --- Fee voucher generator ---------------------------------------------------
+// The page and its scripts live in the project root, next to the fee APIs they
+// talk to. They are served by name so the browser gets the same files the
+// server works with, and so no whole directory is exposed. The page itself is
+// picked up by the catch-all below.
 app.get('/voucher-engine.js', (req, res) => {
   res.type('application/javascript').sendFile(path.join(__dirname, 'voucher-engine.js'))
+})
+app.get('/voucher-api.js', (req, res) => {
+  res.type('application/javascript').sendFile(path.join(__dirname, 'voucher-api.js'))
 })
 app.get('/voucher-demo-api.js', (req, res) => {
   res.type('application/javascript').sendFile(path.join(__dirname, 'voucher-demo-api.js'))
@@ -542,6 +546,7 @@ app.use('/api/tt2', tt2FeatureCheck, createTt2Router({
   auth: tt2Auth
 }))
 app.use('/api/finance', createFinanceRouter({ pool, requireAuth }))
+app.use('/api/fees', createFeeRouter({ pool, requireAuth }))
 
 // ============================================
 // CREATE TABLES ON STARTUP
@@ -920,6 +925,81 @@ async function createTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(student_id, month, tenant_id)
+    );
+  `)
+
+  // --- Fee voucher generator: vouchers, receipts and per-school fee settings ---
+  // Every row carries its tenant, so one academy's money can never be mixed
+  // with another's. `ref_id` is the number the fee engine works with (and the
+  // number printed on the challan); `id` stays the database's own key.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fee_vouchers (
+      id SERIAL PRIMARY KEY,
+      tenant_id VARCHAR(10) NOT NULL,
+      ref_id INTEGER NOT NULL,
+      student_id INTEGER,
+      class_id INTEGER,
+      student_name VARCHAR(150),
+      father_name VARCHAR(150),
+      admission_number VARCHAR(60),
+      class_name VARCHAR(150),
+      month VARCHAR(20) NOT NULL,
+      year VARCHAR(10) NOT NULL,
+      amount NUMERIC(12, 2) DEFAULT 0,
+      base_amount NUMERIC(12, 2) DEFAULT 0,
+      discount NUMERIC(12, 2) DEFAULT 0,
+      charges JSONB DEFAULT '[]'::jsonb,
+      status VARCHAR(20) DEFAULT 'Unpaid',
+      issue_date TIMESTAMPTZ,
+      due_date TIMESTAMPTZ,
+      payment_date TIMESTAMPTZ,
+      total_received NUMERIC(12, 2) DEFAULT 0,
+      paid_tuition NUMERIC(12, 2) DEFAULT 0,
+      paid_ac NUMERIC(12, 2) DEFAULT 0,
+      fine_charged NUMERIC(12, 2),
+      fine_waived BOOLEAN DEFAULT false,
+      remaining_annual_charges NUMERIC(12, 2) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (tenant_id, ref_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_fee_vouchers_tenant_period ON fee_vouchers(tenant_id, year, month);
+    CREATE INDEX IF NOT EXISTS idx_fee_vouchers_tenant_student ON fee_vouchers(tenant_id, student_id);
+    CREATE INDEX IF NOT EXISTS idx_fee_vouchers_tenant_class ON fee_vouchers(tenant_id, class_id);
+
+    CREATE TABLE IF NOT EXISTS fee_receipts (
+      id SERIAL PRIMARY KEY,
+      tenant_id VARCHAR(10) NOT NULL,
+      ref_id INTEGER NOT NULL,
+      receipt_no VARCHAR(40) NOT NULL,
+      voucher_id INTEGER,
+      student_id INTEGER,
+      student_name VARCHAR(150),
+      class_name VARCHAR(150),
+      month VARCHAR(20),
+      year VARCHAR(10),
+      paid_tuition NUMERIC(12, 2) DEFAULT 0,
+      paid_ac NUMERIC(12, 2) DEFAULT 0,
+      amount NUMERIC(12, 2) DEFAULT 0,
+      allocations JSONB DEFAULT '[]'::jsonb,
+      received_at TIMESTAMPTZ DEFAULT NOW(),
+      received_by VARCHAR(100),
+      received_by_name VARCHAR(150),
+      reversed_at TIMESTAMPTZ,
+      reversed_by VARCHAR(100),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (tenant_id, ref_id),
+      UNIQUE (tenant_id, receipt_no)
+    );
+    CREATE INDEX IF NOT EXISTS idx_fee_receipts_tenant ON fee_receipts(tenant_id, received_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_fee_receipts_tenant_student ON fee_receipts(tenant_id, student_id);
+
+    CREATE TABLE IF NOT EXISTS fee_settings (
+      tenant_id VARCHAR(10) PRIMARY KEY,
+      due_days INTEGER DEFAULT 10,
+      late_fine NUMERIC(12, 2) DEFAULT 0,
+      branding JSONB DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `)
 

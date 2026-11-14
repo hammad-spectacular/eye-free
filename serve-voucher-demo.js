@@ -33,6 +33,15 @@ const TYPES = {
 
 http.createServer((req, res) => {
   const url = decodeURIComponent((req.url || '/').split('?')[0]);
+
+  // The page asks whether the real fee service is there. On this standalone
+  // server there is none, so it is told plainly instead of getting an error.
+  if (url === '/api/fees/status') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify({ service: 'fees', signedIn: false }));
+    return;
+  }
+
   const rel = url === '/' ? 'voucher-generator.html' : url.replace(/^\/+/, '');
   const file = path.join(ROOT, rel);
 
