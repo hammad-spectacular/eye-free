@@ -638,6 +638,50 @@ function createFinanceRouter({ pool, requireAuth }) {
       estimateParams
     )
 
+    // Student fee receivables: tuition still owed on open vouchers plus annual
+    // charges not yet paid. This is money owed TO the school, not income, so it
+    // stays out of total_income until a receipt is actually recorded.
+    const feeBranch = branchId == null ? '' : ' AND s.branch_id = $2'
+    const feeReceivablesTuition = await pool.query(
+      `SELECT COALESCE(SUM(GREATEST(v.amount + COALESCE(v.fine_charged,0) - COALESCE(v.paid_tuition,0), 0)),0)::numeric(14,2) AS outstanding
+       FROM fee_vouchers v
+       JOIN students s ON s.id = v.student_id AND s.tenant_id = v.tenant_id
+       WHERE v.tenant_id=$1
+         AND NOT (v.status = 'Paid' AND v.paid_tuition IS NULL)
+         AND COALESCE(v.paid_tuition,0) < v.amount + COALESCE(v.fine_charged,0)${feeBranch}`,
+      branchId == null ? [tenantId] : [tenantId, branchId]
+    )
+    const feeReceivablesAnnual = await pool.query(
+      `SELECT COALESCE(SUM(GREATEST(COALESCE(fa.admission,0) - COALESCE(pa.paid,0), 0)),0)::numeric(14,2) AS outstanding
+       FROM students s
+       JOIN LATERAL (
+         SELECT COALESCE(
+           (SELECT fs.admission_fee FROM fee_structures fs
+             WHERE fs.tenant_id = s.tenant_id AND fs.type = 'student' AND fs.target_id = s.id
+             ORDER BY fs.id DESC LIMIT 1),
+           (SELECT fs.admission_fee FROM fee_structures fs
+             WHERE fs.tenant_id = s.tenant_id AND fs.type = 'class' AND fs.target_id = s.class_id
+             ORDER BY fs.id DESC LIMIT 1), 0) AS admission
+       ) fa ON true
+       LEFT JOIN LATERAL (
+         SELECT SUM(r.paid_ac) AS paid FROM fee_receipts r
+         WHERE r.tenant_id = s.tenant_id AND r.student_id = s.id AND r.reversed_at IS NULL
+       ) pa ON true
+       WHERE s.tenant_id=$1${feeBranch}`,
+      branchId == null ? [tenantId] : [tenantId, branchId]
+    )
+    // Fee money actually received this month (informational; the ledger only
+    // counts it if it was also recorded as income, so this is never added to
+    // total_income to avoid counting the same money twice).
+    const feeCollections = await pool.query(
+      `SELECT COALESCE(SUM(r.amount),0)::numeric(14,2) AS collected
+       FROM fee_receipts r
+       JOIN students s ON s.id = r.student_id AND s.tenant_id = r.tenant_id
+       WHERE r.tenant_id=$1 AND r.reversed_at IS NULL
+         AND r.received_at::date BETWEEN $2::date AND $3::date${branchId == null ? '' : ' AND s.branch_id = $4'}`,
+      branchId == null ? [tenantId, bounds.start, bounds.end] : [tenantId, bounds.start, bounds.end, branchId]
+    )
+
     const openingCash = amountToCents(opening.rows[0].opening) + amountToCents(openingMovement.rows[0].movement)
     const actualCash = openingCash + amountToCents(cash.rows[0].movement) + amountToCents(accountOpeningsThisMonth.rows[0].opening)
     const payrollOutstanding = amountToCents(payroll.rows[0].outstanding)
@@ -655,6 +699,8 @@ function createFinanceRouter({ pool, requireAuth }) {
       payroll_paid: monthly.rows[0].payroll_paid,
       other_expenses: monthly.rows[0].other_expenses,
       estimated_future_expenses: estimates.rows[0].total,
+      fee_receivables: centsToAmount(amountToCents(feeReceivablesTuition.rows[0].outstanding) + amountToCents(feeReceivablesAnnual.rows[0].outstanding)),
+      fee_collections: feeCollections.rows[0].collected,
       available_after_obligations: centsToAmount(actualCash - outstanding)
     })
   }))

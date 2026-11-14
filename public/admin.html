@@ -2638,10 +2638,10 @@
           <div class="search-filter-container" style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
             <div style="flex:1; min-width:240px; position:relative;">
               <input type="text" id="studentSearchInput" class="form-input"
-                placeholder="🔍 Search by name or roll number..." oninput="filterStudents(); saveStudentViewDraft();">
+                placeholder="🔍 Search by name or roll number..." oninput="filterStudents()">
             </div>
             <div style="width:200px; min-width:150px;">
-              <select id="studentClassFilter" class="form-input" onchange="filterStudents(); saveStudentViewDraft();"
+              <select id="studentClassFilter" class="form-input" onchange="filterStudents()"
                 aria-label="Filter students by class">
                 <option value="">All Classes</option>
                 <option value="unassigned">Unassigned</option>
@@ -2916,97 +2916,140 @@
     <!-- ==================== FEES TAB ==================== -->
     <div id="tab-fees" class="tab-content">
       <!-- Fee Management Sub-Nav Pills -->
-      <div style="display:flex; gap:10px; border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 20px;">
-        <button class="btn btn-ghost fee-subtab-btn active" id="feeSubTabBtn-dashboard" onclick="switchFeeSubTab('dashboard')">
-          <i class="fa-solid fa-chart-pie"></i> Dashboard
+      <div style="display:flex; gap:10px; border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; flex-wrap:wrap; align-items:center;">
+        <button class="btn btn-ghost fee-subtab-btn active" id="feeSubTabBtn-collect" onclick="switchFeeSubTab('collect')">
+          <i class="fa-solid fa-cash-register"></i> Collect Fee
         </button>
-        <button class="btn btn-ghost fee-subtab-btn" id="feeSubTabBtn-structure" onclick="switchFeeSubTab('structure')">
-          <i class="fa-solid fa-sliders"></i> Fee Structure
+        <button class="btn btn-ghost fee-subtab-btn" id="feeSubTabBtn-pending" onclick="switchFeeSubTab('pending')">
+          <i class="fa-solid fa-hourglass-half"></i> Pending Fees
         </button>
         <button class="btn btn-ghost fee-subtab-btn" id="feeSubTabBtn-history" onclick="switchFeeSubTab('history')">
-          <i class="fa-solid fa-list"></i> Payment Records
+          <i class="fa-solid fa-list"></i> Payment History
         </button>
+        <span style="flex:1"></span>
+        <button class="btn btn-secondary btn-sm" onclick="openFeeStructureModal()" title="Monthly, admission, transport and discount rates that drive voucher amounts">
+          <i class="fa-solid fa-sliders"></i> Fee Rates
+        </button>
+        <a class="btn btn-secondary btn-sm" href="/voucher-generator.html#generate" title="Create monthly fee vouchers (challans) for a class">
+          <i class="fa-solid fa-file-invoice"></i> Generate Voucher
+        </a>
+        <a class="btn btn-secondary btn-sm" href="/voucher-generator.html#collect" title="Open challans and receipts">
+          <i class="fa-solid fa-print"></i> Challans
+        </a>
       </div>
 
-      <!-- 1. Dashboard Sub-Tab -->
-      <div id="feeSubTab-dashboard" class="fee-subtab-content">
-        <!-- Stats Grid (populated by renderFees) -->
+      <!-- 1. Collect Fee Sub-Tab -->
+      <div id="feeSubTab-collect" class="fee-subtab-content">
+        <!-- Stats Grid (populated by renderFeeSummaryCards) -->
         <div id="feesSummaryCards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;"></div>
 
-        <!-- Fee Overview Card -->
         <div class="section-card">
           <div class="section-header">
             <div class="section-header-left">
               <div class="section-icon amber" style="background: rgba(250, 204, 21, 0.14); color: #f59e0b;"><i class="fas fa-money-bill-wave"></i></div>
               <div>
-                <div class="section-title">Fee Overview</div>
-                <div class="section-subtitle">Current month fee status</div>
+                <div class="section-title">Collect Fee</div>
+                <div class="section-subtitle">Tick the students paying together — each gets their own receipt</div>
               </div>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="openFeePaymentModal()">
-              <i class="fa-solid fa-plus"></i> Record Payment
-            </button>
           </div>
           <div class="section-body">
             <div class="fees-filter-row" style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-              <div class="form-group" style="flex:0 1 170px; min-width:150px; margin-bottom:0;">
-                <label class="form-label" for="feeMonthFilter">Month</label>
-                <input type="month" id="feeMonthFilter" class="form-input" onchange="applyFeeFilters()">
-              </div>
-              <div class="form-group" style="flex:1 1 180px; min-width:150px; margin-bottom:0;">
-                <label class="form-label" for="feeClassFilter">Class</label>
-                <select id="feeClassFilter" class="form-input" onchange="renderFees()">
+              <div class="form-group" style="flex:0 1 220px; min-width:180px; margin-bottom:0;">
+                <label class="form-label" for="feeCollectClassFilter">Class</label>
+                <select id="feeCollectClassFilter" class="form-input" onchange="renderFeeCollect()">
                   <option value="">All Classes</option>
                 </select>
               </div>
-              <div class="form-group" style="flex:0 1 180px; min-width:150px; margin-bottom:0;">
-                <label class="form-label" for="feeStatusFilter">Status</label>
-                <select id="feeStatusFilter" class="form-input" onchange="renderFees()">
-                  <option value="">All Status</option>
-                  <option value="paid">Paid</option>
-                  <option value="partial">Partial</option>
-                  <option value="unpaid">Unpaid</option>
-                  <option value="not_set_up">Not Set Up</option>
-                  <option value="pending_approval">Pending Approval</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex:1 1 200px; min-width:180px; margin-bottom:0;">
-                <label class="form-label" for="feeSearchInput">Search</label>
-                <input type="text" id="feeSearchInput" class="form-input" placeholder="Search student or class..." oninput="renderFees()">
-              </div>
-              <div class="form-group" style="flex:0 0 auto; margin-bottom:0; display:flex; align-items:flex-end;">
-                <button class="btn btn-primary" onclick="applyFeeFilters()"><i class="fas fa-search"></i> Apply</button>
+              <div class="form-group" style="flex:1 1 220px; min-width:180px; margin-bottom:0;">
+                <label class="form-label" for="feeCollectSearch">Search</label>
+                <input type="text" id="feeCollectSearch" class="form-input" placeholder="Search student or admission no..." oninput="renderFeeCollect()">
               </div>
             </div>
-            <div id="feesTableWrap"></div>
+
+            <div id="feeBulkBar" style="display:none; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg-input); margin-bottom:14px;">
+              <span style="font-size:0.85rem; font-weight:600;" id="feeBulkCount">0 selected</span>
+              <div class="form-group" style="flex:0 1 160px; min-width:140px; margin-bottom:0;">
+                <label class="form-label" for="feeBulkMethod">Method</label>
+                <select id="feeBulkMethod" class="form-input">
+                  <option value="cash">Cash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="card">Card</option>
+                  <option value="online">Online</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 1 160px; min-width:140px; margin-bottom:0;">
+                <label class="form-label" for="feeBulkDate">Payment date</label>
+                <input type="date" id="feeBulkDate" class="form-input">
+              </div>
+              <div style="flex:1"></div>
+              <button class="btn btn-primary btn-sm" id="feeBulkSubmit" onclick="submitBulkFeePayment()">
+                <i class="fa-solid fa-check"></i> Record payments
+              </button>
+            </div>
+
+            <div id="feeCollectTableWrap"></div>
+            <div id="feeBulkResults" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
 
-      <!-- 2. Fee Structure Sub-Tab -->
-      <div id="feeSubTab-structure" class="fee-subtab-content" style="display:none;">
+      <!-- 2. Pending Fees Sub-Tab -->
+      <div id="feeSubTab-pending" class="fee-subtab-content" style="display:none;">
         <div class="section-card">
           <div class="section-header">
             <div class="section-header-left">
-              <div class="section-icon purple">
-                <i class="fa-solid fa-sliders"></i>
+              <div class="section-icon amber" style="background: rgba(245, 158, 11, 0.14); color: #f59e0b;">
+                <i class="fa-solid fa-hourglass-half"></i>
               </div>
               <div>
-                <div class="section-title">Fee Structure Setup</div>
-                <div class="section-subtitle">Configure fee amounts per student or class</div>
+                <div class="section-title">Pending Fees</div>
+                <div class="section-subtitle">Generated vouchers that still have a balance</div>
               </div>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="openFeeStructureModal()">
-              <i class="fa-solid fa-plus"></i> Add Structure
-            </button>
           </div>
           <div class="section-body">
-            <div id="feeStructureTableWrap"></div>
+            <div class="fees-filter-row" style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+              <div class="form-group" style="flex:0 1 180px; min-width:150px; margin-bottom:0;">
+                <label class="form-label" for="feePendingClassFilter">Class</label>
+                <select id="feePendingClassFilter" class="form-input" onchange="renderFeePending()">
+                  <option value="">All Classes</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 1 150px; min-width:130px; margin-bottom:0;">
+                <label class="form-label" for="feePendingMonthFilter">Month</label>
+                <select id="feePendingMonthFilter" class="form-input" onchange="renderFeePending()">
+                  <option value="">All Months</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 1 110px; min-width:100px; margin-bottom:0;">
+                <label class="form-label" for="feePendingYearFilter">Year</label>
+                <select id="feePendingYearFilter" class="form-input" onchange="renderFeePending()">
+                  <option value="">All Years</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 1 160px; min-width:140px; margin-bottom:0;">
+                <label class="form-label" for="feePendingStatusFilter">Status</label>
+                <select id="feePendingStatusFilter" class="form-input" onchange="renderFeePending()">
+                  <option value="">All Status</option>
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="Partially Paid">Partially Paid</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1 1 200px; min-width:180px; margin-bottom:0;">
+                <label class="form-label" for="feePendingSearch">Search</label>
+                <input type="text" id="feePendingSearch" class="form-input" placeholder="Search student or admission no..." oninput="renderFeePending()">
+              </div>
+            </div>
+            <div id="feePendingTableWrap"></div>
           </div>
         </div>
       </div>
 
-      <!-- 3. Payment Records Sub-Tab -->
+      <!-- 3. Payment History Sub-Tab -->
       <div id="feeSubTab-history" class="fee-subtab-content" style="display:none;">
         <div class="section-card">
           <div class="section-header">
@@ -3016,7 +3059,7 @@
               </div>
               <div>
                 <div class="section-title">Payment History</div>
-                <div class="section-subtitle">Complete audit log of all recorded fee payments</div>
+                <div class="section-subtitle">Every fee receipt issued, newest first</div>
               </div>
             </div>
           </div>
@@ -3185,58 +3228,13 @@
     </div>
   </div>
 
-  <div class="edit-modal" id="feePaymentModal" style="display:none; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center; background:rgba(15,23,42,0.7);">
-    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; width:min(92vw, 500px); padding:20px; box-shadow:var(--shadow-lg);">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <div>
-          <div style="font-size:1rem; font-weight:800; color:var(--text);">Record Payment</div>
-          <div style="font-size:0.82rem; color:var(--text-secondary);">Update the current fee record for the selected month.</div>
-        </div>
-        <button class="btn btn-ghost" onclick="closeFeeModal()"><i class="fas fa-times"></i></button>
-      </div>
-      <input type="hidden" id="feeRecordId">
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordStudent">Student</label>
-        <select id="feeRecordStudent" class="form-input"></select>
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordMonth">Month</label>
-        <input id="feeRecordMonth" class="form-input" type="month">
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordDue">Amount Due</label>
-        <input id="feeRecordDue" class="form-input" type="number" min="0" step="100">
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordPaid">Amount Paid</label>
-        <input id="feeRecordPaid" class="form-input" type="number" min="0" step="100">
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordMethod">Payment Method</label>
-        <select id="feeRecordMethod" class="form-input">
-          <option value="cash">Cash</option>
-          <option value="bank">Bank Transfer</option>
-          <option value="online">Online</option>
-        </select>
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label" for="feeRecordNotes">Notes</label>
-        <textarea id="feeRecordNotes" class="form-textarea" rows="2" placeholder="Optional note or payment details"></textarea>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-        <button class="btn btn-ghost" onclick="closeFeeModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveFeeRecord()"><i class="fas fa-check"></i> Save Record</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Fee Structure Modal -->
+  <!-- Fee Rates Modal (monthly/admission/transport/discount per class or student) -->
   <div class="edit-modal" id="feeStructureModal" style="display:none; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center; background:rgba(15,23,42,0.7);">
     <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; width:min(92vw, 500px); padding:20px; box-shadow:var(--shadow-lg);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div>
-          <div style="font-size:1rem; font-weight:800; color:var(--text);">Add Fee Structure</div>
-          <div style="font-size:0.82rem; color:var(--text-secondary);">Configure fee amounts per student or class</div>
+          <div style="font-size:1rem; font-weight:800; color:var(--text);">Fee Rates</div>
+          <div style="font-size:0.82rem; color:var(--text-secondary);">Monthly, admission, transport and discount amounts per class or student</div>
         </div>
         <button class="btn btn-ghost" onclick="closeFeeStructureModal()"><i class="fas fa-times"></i></button>
       </div>
@@ -3498,6 +3496,7 @@
   <script src="./api-config.js"></script>
   <script src="./auth-utils.js"></script>
   <script src="./draft-store.js"></script>
+  <script src="./voucher-engine.js"></script>
   <script>
     let credentialsDoneCallback = null;
     let activeCredentialsType = null;
@@ -3605,7 +3604,10 @@
         const bq = branchQueryParam();
         const data = await apiFetch('/api/students' + bq).then(r => r.json());
         window.appData.students = Array.isArray(data) ? data : [];
-        if (activeTabId === 'tab-students') filterStudents();
+        if (activeTabId === 'tab-students') {
+          populateStudentClassFilter();
+          filterStudents();
+        }
       } catch (_) {}
     }
 
@@ -3624,6 +3626,11 @@
         const data = await apiFetch('/api/classes' + bq).then(r => r.json());
         window.appData.classes = Array.isArray(data) ? data : [];
         renderClasses();
+        // Also update student class filter if classes change
+        if (activeTabId === 'tab-students') {
+          populateStudentClassFilter();
+          filterStudents();
+        }
       } catch (_) {}
     }
 
@@ -3846,7 +3853,9 @@
         if (isInitial) {
           restoreStudentFormDraft();
         }
-        await Promise.all([loadFeeData(), loadFeeStructures()]);
+        // The fee center pulls vouchers/receipts itself; fee rates load lazily
+        // when the Fee Rates modal opens.
+        loadFeeCenter();
 
         // Staggered section reveals with min skeleton time
         await revealAfterMinTime(() => {
@@ -3857,7 +3866,10 @@
         setTimeout(() => {
           if (activeTabId !== 'tab-classes') renderClasses();
           if (activeTabId !== 'tab-teachers') renderTeachers();
-          if (activeTabId !== 'tab-students') filterStudents();
+          if (activeTabId !== 'tab-students') {
+            populateStudentClassFilter();
+            filterStudents();
+          }
           if (activeTabId !== 'tab-attendance') renderAttendance();
           if (activeTabId !== 'tab-stats') renderStats();
           if (activeTabId !== 'tab-announcements') renderAnnouncements();
@@ -3895,8 +3907,8 @@
     async function refreshDashboardAfterSave() {
       await reloadAllData(false, true);
       loadCapacity(); // Automatically refresh the capacity counts in the top header
-      if (activeTabId === 'tab-fees' && document.getElementById('feeSubTabBtn-history')?.classList.contains('active')) {
-        await renderPaymentHistoryTab();
+      if (activeTabId === 'tab-fees' && window.feeCenter.activeSubTab === 'history') {
+        loadFeeReceipts();
       }
     }
 
@@ -3930,11 +3942,14 @@
     function renderCurrentTab() {
       if (activeTabId === 'tab-classes') renderClasses();
       else if (activeTabId === 'tab-teachers') renderTeachers();
-      else if (activeTabId === 'tab-students') filterStudents();
+      else if (activeTabId === 'tab-students') {
+        populateStudentClassFilter();
+        filterStudents();
+      }
       else if (activeTabId === 'tab-attendance') renderAttendance();
       else if (activeTabId === 'tab-stats') renderStats();
       else if (activeTabId === 'tab-announcements') renderAnnouncements();
-      else if (activeTabId === 'tab-fees') renderFees();
+      else if (activeTabId === 'tab-fees') loadFeeCenter().then(() => { if (window.feeCenter.loaded) renderActiveFeeSubTab(); });
       else if (activeTabId === 'tab-coordinators') loadCoordinators();
       else if (activeTabId === 'tab-complaints') loadComplaints();
       updateSaveBar();
@@ -3967,371 +3982,673 @@
       return `<span class="fee-card-pill ${normalized}" style="${style}" role="button" tabindex="0">${escapeHtml(getFeeStatusLabel(status))}</span>`;
     }
 
-    async function loadFeeData(month) {
-      const wrap = document.getElementById('feesTableWrap');
-      if (wrap) {
-        wrap.innerHTML = '<div class="empty-state"><div class="loader-spinner" style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div><div style="font-size:0.85rem;color:var(--text-secondary);">Loading fee data...</div></div>';
-      }
+    // =============================================================
+    // FEE CENTER — built on the voucher ledger (/api/fees)
+    // Collect Fee, Pending Fees and Payment History all read the same
+    // fee_vouchers / fee_receipts records the Voucher Generator writes,
+    // so what is billed, what is owed and what was received can never
+    // disagree. The old fee_payments dashboard is gone; its rows are
+    // still synced by the server for backwards compatibility.
+    // =============================================================
+
+    window.feeCenter = {
+      loaded: false,
+      loading: false,
+      students: [],
+      classes: [],
+      vouchers: [],
+      settings: { dueDays: 10, lateFine: 0 },
+      branding: {},
+      receipts: [],
+      receiptsLoaded: false,
+      activeSubTab: 'collect'
+    };
+
+    const VG = () => window.VGEngine;
+
+    async function loadFeeCenter(force) {
+      const fc = window.feeCenter;
+      if (fc.loading) return fc.loaded;
+      if (fc.loaded && !force) return true;
+      fc.loading = true;
       try {
-        const now = new Date();
-        const targetMonth = month || now.toISOString().slice(0, 7);
-        const monthInput = document.getElementById('feeMonthFilter');
-        if (monthInput && !monthInput.value) monthInput.value = targetMonth;
-        const resp = await apiFetch(`/api/fees/payments?month=${encodeURIComponent(targetMonth)}`);
-        if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
-        const data = await resp.json();
-        window.appData.fees = Array.isArray(data) ? data : [];
-        // The summary cards are computed from these rows in renderFees(), so the
-        // month-only /api/fees/stats endpoint is not needed here.
-        window.appData.feesLoadError = '';
+        const [bootRes, voucherRes] = await Promise.all([
+          apiFetch('/api/fees/bootstrap'),
+          apiFetch('/api/fees/vouchers')
+        ]);
+        if (!bootRes.ok || !voucherRes.ok) throw new Error(`Fee service returned ${bootRes.status}/${voucherRes.status}`);
+        const boot = await bootRes.json();
+        const vouchers = await voucherRes.json();
+        fc.students = Array.isArray(boot.students) ? boot.students : [];
+        fc.classes = Array.isArray(boot.classes) ? boot.classes : [];
+        fc.settings = boot.settings || { dueDays: 10, lateFine: 0 };
+        fc.branding = boot.branding || {};
+        fc.vouchers = Array.isArray(vouchers) ? vouchers : [];
+        fc.loaded = true;
+        fc.receiptsLoaded = false;
+        populateFeeClassFilters();
+        populateFeePendingFilters();
+        // If the Fees tab is open, whatever sub-tab is showing gets fresh data —
+        // covers payments submitted while a reload was still in flight.
+        if (typeof activeTabId !== 'undefined' && activeTabId === 'tab-fees') renderActiveFeeSubTab();
       } catch (err) {
-        window.appData.fees = [];
-        window.appData.feesLoadError = err.message;
+        console.error('Failed to load fee center:', err);
+        showToast('Failed to load fee data: ' + err.message, 'error');
+      } finally {
+        fc.loading = false;
       }
-      renderFees();
+      return fc.loaded;
+    }
+
+    function feeVouchersForStudent(studentId) {
+      return window.feeCenter.vouchers.filter(v => String(v.studentId) === String(studentId));
+    }
+
+    function feeClassName(voucherOrStudent) {
+      const v = voucherOrStudent;
+      if (v && v.className) return v.className;
+      const cls = window.feeCenter.classes.find(c => String(c.id) === String(v && v.classId));
+      return cls ? classDisplayName(cls) : 'Unassigned';
+    }
+
+    /** Per-student outstanding, straight from the engine's own maths. */
+    function feeStudentDues(student) {
+      const E = VG();
+      const vouchers = feeVouchersForStudent(student.id);
+      return {
+        dues: E.studentDues(student, vouchers, window.feeCenter.settings.lateFine || 0),
+        vouchers,
+        // The voucher a payment anchors on: oldest month still open, else oldest billed.
+        anchor: [...vouchers].sort((a, b) => E.periodOf(a) - E.periodOf(b))
+          .find(v => v.status !== 'Paid') || [...vouchers].sort((a, b) => E.periodOf(a) - E.periodOf(b))[0] || null
+      };
+    }
+
+    /** Rows for the Collect Fee table: every student who still owes something. */
+    function feeCollectRows() {
+      const E = VG();
+      return window.feeCenter.students
+        .filter(s => !E.isLeft(s))
+        .map(student => {
+          const { dues, vouchers, anchor } = feeStudentDues(student);
+          const open = vouchers.filter(v => v.status !== 'Paid');
+          const status = open.some(v => v.status === 'Unpaid') ? 'Unpaid'
+            : open.some(v => v.status === 'Partially Paid') ? 'Partially Paid' : 'Paid';
+          return {
+            student,
+            dues,
+            anchor,
+            status,
+            months: open.length
+          };
+        })
+        .filter(r => r.dues.totalNow > 0.004);
+    }
+
+    function renderFeeSummaryCards(rows) {
+      const cards = document.getElementById('feesSummaryCards');
+      if (!cards) return;
+      const students = rows.length;
+      const totalDue = rows.reduce((a, r) => a + r.dues.totalNow, 0);
+      const totalPaid = rows.reduce((a, r) => {
+        const vs = feeVouchersForStudent(r.student.id);
+        return a + vs.reduce((s, v) => s + (Number(v.paidTuition) || 0) + (Number(v.paidAC) || 0), 0);
+      }, 0);
+      const outstanding = Math.max(0, totalDue - totalPaid);
+      const rate = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+      const card = (label, value, sub, color) => `
+        <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
+          <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">${label}</div>
+          <div style="font-size:1.25rem; font-weight:800; color:${color || 'var(--text)'};">${value}</div>
+          <div style="font-size:0.72rem; color:var(--text-secondary);">${sub}</div>
+        </div>`;
+      cards.innerHTML =
+        card('Students with dues', String(students), 'Outstanding fee payers') +
+        card('Total Outstanding', formatFeeCurrency(totalDue), 'Billed and still owed') +
+        card('Collected', formatFeeCurrency(totalPaid), 'Against these dues') +
+        card('Still Unpaid', formatFeeCurrency(outstanding), outstanding > 0 ? 'To be collected' : 'All clear', outstanding > 0 ? 'var(--danger, #dc2626)' : 'var(--text)') +
+        card('Collection Rate', rate + '%', 'Of billed dues');
+    }
+
+    function populateFeeClassFilters() {
+      ['feeCollectClassFilter', 'feePendingClassFilter'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const keep = sel.value;
+        sel.innerHTML = '<option value="">All Classes</option>';
+        window.feeCenter.classes.forEach(cls => {
+          const opt = document.createElement('option');
+          opt.value = cls.id;
+          opt.textContent = classDisplayName(cls);
+          sel.appendChild(opt);
+        });
+        if (keep && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
+      });
+    }
+
+    function populateFeePendingFilters() {
+      const monthSel = document.getElementById('feePendingMonthFilter');
+      const yearSel = document.getElementById('feePendingYearFilter');
+      if (monthSel) {
+        const keepM = monthSel.value;
+        monthSel.innerHTML = '<option value="">All Months</option>';
+        VG().MONTHS.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = m;
+          monthSel.appendChild(opt);
+        });
+        if (keepM) monthSel.value = keepM;
+      }
+      if (yearSel) {
+        const keepY = yearSel.value;
+        const years = [...new Set(window.feeCenter.vouchers.map(v => String(v.year)))].sort().reverse();
+        yearSel.innerHTML = '<option value="">All Years</option>' +
+          years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
+        if (keepY && [...yearSel.options].some(o => o.value === keepY)) yearSel.value = keepY;
+      }
     }
 
     function switchFeeSubTab(subTabName) {
-      const tabs = ['dashboard', 'structure', 'history'];
+      const tabs = ['collect', 'pending', 'history'];
       tabs.forEach(t => {
         const btn = document.getElementById(`feeSubTabBtn-${t}`);
         const content = document.getElementById(`feeSubTab-${t}`);
         if (btn) btn.classList.toggle('active', t === subTabName);
         if (content) content.style.display = (t === subTabName) ? 'block' : 'none';
       });
-      if (subTabName === 'dashboard') {
-        renderFees();
-      } else if (subTabName === 'structure') {
-        renderFeeStructureTable();
-      } else if (subTabName === 'history') {
-        renderPaymentHistoryTab();
-      }
+      window.feeCenter.activeSubTab = subTabName;
+      renderActiveFeeSubTab();
     }
 
-    async function renderPaymentHistoryTab() {
-      const wrap = document.getElementById('paymentHistoryTableWrap');
-      if (!wrap) return;
-      wrap.innerHTML = '<div class="empty-state"><div class="loader-spinner" style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div><div style="font-size:0.85rem;color:var(--text-secondary);">Loading payment history...</div></div>';
-      try {
-        const resp = await apiFetch('/api/fees/payments?mode=records');
-        if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
-        const payments = await resp.json();
-        if (!Array.isArray(payments) || payments.length === 0) {
-          wrap.innerHTML = '<div class="empty-state"><div class="icon">📜</div><div class="msg">No payment records yet</div><div class="sub">Recorded payments will show up here.</div></div>';
-          return;
-        }
-        wrap.innerHTML = `
-          <div style="overflow-x:auto;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="text-align:left;">Receipt #</th>
-                  <th style="text-align:left;">Student</th>
-                  <th style="text-align:center;">Month</th>
-                  <th style="text-align:center;">Amount Paid</th>
-                  <th style="text-align:center;">Method</th>
-                  <th style="text-align:center;">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${payments.map(p => `
-                  <tr>
-                    <td style="text-align:left; font-weight:700;">RCP-${String(p.id || 0).padStart(3, '0')}</td>
-                    <td style="text-align:left;"><strong>${escapeHtml(p.student_name || '—')}</strong></td>
-                    <td style="text-align:center;">${escapeHtml(p.month || '—')}</td>
-                    <td style="text-align:center; font-weight:700; color:var(--success);">Rs. ${Number(p.amount_paid || 0).toLocaleString()}</td>
-                    <td style="text-align:center;"><span class="badge" style="background:rgba(59,130,246,0.14); color:#3b82f6;">${escapeHtml((p.payment_method || 'Cash').toUpperCase())}</span></td>
-                    <td style="text-align:center; color:var(--text-secondary);">${escapeHtml(p.payment_date || '—')}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>`;
-      } catch (err) {
-        wrap.innerHTML = `<div class="empty-state"><div class="msg" style="color:var(--danger);">Failed to load payment history</div><div class="sub">${escapeHtml(err.message)}</div></div>`;
-      }
+    function renderActiveFeeSubTab() {
+      const tab = window.feeCenter.activeSubTab || 'collect';
+      if (tab === 'collect') renderFeeCollect();
+      else if (tab === 'pending') renderFeePending();
+      else if (tab === 'history') loadFeeReceipts();
     }
 
-    async function applyFeeFilters() {
-      const monthInput = document.getElementById('feeMonthFilter');
-      const month = monthInput ? monthInput.value : '';
-      await loadFeeData(month);
-    }
+    // ---------------- Collect Fee ----------------
 
-    function renderFees() {
-      const wrap = document.getElementById('feesTableWrap');
-      const cards = document.getElementById('feesSummaryCards');
-      const records = Array.isArray(window.appData.fees) ? window.appData.fees : [];
-      const query = (document.getElementById('feeSearchInput')?.value || '').toLowerCase().trim();
-      const classFilter = document.getElementById('feeClassFilter')?.value || '';
-      const monthFilter = document.getElementById('feeMonthFilter')?.value || '';
-      const statusFilter = document.getElementById('feeStatusFilter')?.value || '';
+    function renderFeeCollect() {
+      const wrap = document.getElementById('feeCollectTableWrap');
+      if (!wrap || !window.feeCenter.loaded) return;
+      const E = VG();
+      const classFilter = document.getElementById('feeCollectClassFilter')?.value || '';
+      const query = (document.getElementById('feeCollectSearch')?.value || '').toLowerCase().trim();
 
-      const filtered = records.filter(record => {
-        const student = (window.appData.students || []).find(s => String(s.id) === String(record.student_id)) || {};
-        const studentName = String(record.student_name || student.name || '').toLowerCase();
-        const className = classDisplayName(record.class_name, record.class_section);
-        const classId = String(record.class_id || student.class_id || '');
-        const month = String(record.month_year || '');
-        const status = String(record.status || '').toLowerCase();
-        const matchesQuery = !query || studentName.includes(query) || className.toLowerCase().includes(query);
-        const matchesClass = !classFilter || classId === classFilter || className === classFilter;
-        const matchesMonth = !monthFilter || month === monthFilter;
-        const matchesStatus = !statusFilter || status === statusFilter;
-        return matchesQuery && matchesClass && matchesMonth && matchesStatus;
-      });
-
-      // Summarise the records actually on screen. Using the server's month stats here
-      // made the cards ignore the active search/class/status filters, so the totals
-      // never matched the rows underneath them.
-      const totalStudents = filtered.length;
-      const totalDue = filtered.reduce((acc, item) => acc + (Number(item.amount_due) || 0), 0);
-      const totalCollected = filtered.reduce((acc, item) => acc + (Number(item.amount_paid) || 0), 0);
-      const totalOutstanding = Math.max(0, totalDue - totalCollected);
-      const collectionRate = totalDue > 0 ? Math.round((totalCollected / totalDue) * 100) : 0;
-
-      if (cards) {
-        cards.innerHTML = `
-          <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">Students</div>
-            <div style="font-size:1.25rem; font-weight:800; color:var(--text);">${totalStudents}</div>
-          </div>
-          <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">Total Due</div>
-            <div style="font-size:1.25rem; font-weight:800; color:var(--text);">${formatFeeCurrency(totalDue)}</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">To be collected</div>
-          </div>
-          <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">Total Collected</div>
-            <div style="font-size:1.25rem; font-weight:800; color:var(--text);">${formatFeeCurrency(totalCollected)}</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Received from students</div>
-          </div>
-          <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">Outstanding</div>
-            <div style="font-size:1.25rem; font-weight:800; color:${totalOutstanding > 0 ? 'var(--danger, #dc2626)' : 'var(--text)'};">${formatFeeCurrency(totalOutstanding)}</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">Still unpaid</div>
-          </div>
-          <div class="section-card" style="padding:14px; border:1px solid var(--border); box-shadow:none;">
-            <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:6px;">Collection Rate</div>
-            <div style="font-size:1.25rem; font-weight:800; color:var(--text);">${collectionRate}%</div>
-            <div style="font-size:0.72rem; color:var(--text-secondary);">of total due</div>
-          </div>`;
+      let rows = feeCollectRows();
+      if (classFilter) rows = rows.filter(r => String(r.student.classId) === String(classFilter));
+      if (query) {
+        rows = rows.filter(r =>
+          String(r.student.name || '').toLowerCase().includes(query) ||
+          String(r.student.admissionNumber || r.student.roll_no || '').toLowerCase().includes(query));
       }
+      rows.sort((a, b) => String(a.student.name).localeCompare(String(b.student.name)));
 
-      if (!filtered.length) {
-        const hasStudents = (window.appData.students || []).length > 0;
-        const apiError = window.appData.feesLoadError;
-        let msg, sub;
-        if (apiError) {
-          msg = 'Failed to load fee data';
-          sub = `${escapeHtml(apiError)}. Check the server or network.`;
-        } else if (!hasStudents) {
-          msg = 'No students enrolled yet';
-          sub = 'Add students in the Students tab first.';
-        } else {
-          const monthVal = document.getElementById('feeMonthFilter')?.value || '';
-          const classVal = document.getElementById('feeClassFilter')?.value || '';
-          const searchVal = document.getElementById('feeSearchInput')?.value || '';
-          const statusVal = document.getElementById('feeStatusFilter')?.value || '';
-          if (searchVal || classVal || monthVal || statusVal) {
-            msg = 'No records match your filters';
-            sub = 'Try changing the search term, class, month, or status filter.';
-          } else {
-            msg = 'No fee records found';
-            sub = 'All students have status "Not Set Up". Record a payment to see data here.';
-          }
-        }
-        wrap.innerHTML = `
-          <div class="empty-state">
-            <div class="icon">💳</div>
-            <div class="msg">${msg}</div>
-            <div class="sub">${sub}</div>
-          </div>`;
+      renderFeeSummaryCards(rows);
+      updateFeeBulkBar();
+
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="empty-state"><div class="icon">💳</div>
+          <div class="msg">Nobody owes fees right now</div>
+          <div class="sub">Generate vouchers from the Voucher Generator first — students appear here once a billing month exists for them.</div></div>`;
         return;
       }
 
-      const classes = Array.isArray(window.appData.classes) ? window.appData.classes : [];
       wrap.innerHTML = `
-        <div class="fee-cards-grid">
-          ${filtered.map(record => {
-            const student = (window.appData.students || []).find(s => String(s.id) === String(record.student_id)) || {};
-            const cls = classes.find(c => String(c.id) === String(record.class_id || student.class_id)) || {};
-            const className = classDisplayName(record.class_name || cls.name, record.class_section || cls.section);
-            const roll = student.roll_no || '';
-            const monthlyFee = getStudentMonthlyFee(student);
-            const initials = String(record.student_name || student.name || 'S').trim().split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || 'S';
-            const status = String(record.status || 'not_set_up').toLowerCase();
-            const recordId = record.payment_id || record.id;
-
-            const amountDueNum = Number(record.amount_due || 0);
-            const amountPaidNum = Number(record.amount_paid || 0);
-            const remainingNum = Math.max(0, amountDueNum - amountPaidNum);
-            const progressPct = amountDueNum > 0 ? Math.min(100, Math.round((amountPaidNum / amountDueNum) * 100)) : (status === 'paid' ? 100 : 0);
-
-            const canQuickPay = status === 'unpaid' || status === 'partial';
-            const pillOnClick = canQuickPay ? `onclick="quickMarkPaidAdmin(event, ${student.id}, ${amountDueNum}, ${amountPaidNum}, this)"` : '';
-            const pillClass = `fee-card-pill ${status} ${canQuickPay ? 'clickable' : ''}`;
-            const pillLabel = status === 'paid' ? 'Paid' : (status === 'partial' ? 'Partial' : (status === 'unpaid' ? 'Unpaid' : 'Not Set Up'));
-
-            const primaryAction = status === 'not_set_up' || recordId == null
-              ? `<button class="btn btn-primary btn-sm" onclick="openStudentFeeEdit(${student.id}, ${monthlyFee !== null ? monthlyFee : 0})" style="justify-content:center; flex:1;"><i class="fa-solid fa-sliders"></i> Set Up Fee</button>`
-              : `<button class="btn btn-primary btn-sm" onclick="openFeeModal(${recordId})" style="justify-content:center; flex:1;"><i class="fas fa-pen"></i> Record Payment</button>`;
-
-            return `
-            <div class="fee-card" id="fee-card-${student.id}">
-              <div class="fee-card-header" onclick="toggleFeeCard(${student.id})" aria-expanded="false" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFeeCard(${student.id});}">
-                <div class="fee-card-header-left">
-                  <div class="fee-card-avatar">${escapeHtml(initials)}</div>
-                  <div class="fee-card-info">
-                    <div class="fee-card-name">${escapeHtml(record.student_name || student.name || 'Student')}</div>
-                    <div class="fee-card-sub">${escapeHtml(className)}${roll ? ' · Roll ' + escapeHtml(roll) : ''}</div>
-                  </div>
-                </div>
-                <div class="fee-card-header-right">
-                  <span class="${pillClass}" ${pillOnClick}>${pillLabel}</span>
-                  <i class="fa-solid fa-chevron-down fee-card-chevron"></i>
-                </div>
-              </div>
-              <div class="fee-card-body" id="fee-card-body-${student.id}" role="region" aria-hidden="true">
-                <div class="fee-card-amount-due">Rs. ${amountDueNum.toLocaleString()}</div>
-                <div class="fee-card-label" style="font-size:0.75rem; margin-bottom: 4px;">Amount Due</div>
-                <div class="fee-progress-container">
-                  <div class="fee-progress-bar" style="width: ${progressPct}%;"></div>
-                </div>
-                <div class="fee-card-row">
-                  <span class="fee-card-label">Amount Paid</span>
-                  <span class="fee-card-value">Rs. ${amountPaidNum.toLocaleString()}</span>
-                </div>
-                <div class="fee-card-row">
-                  <span class="fee-card-label">Remaining</span>
-                  <span class="fee-card-value" style="color:${remainingNum > 0 ? 'var(--danger)' : 'var(--success)'};">Rs. ${remainingNum.toLocaleString()}</span>
-                </div>
-                <div class="fee-card-row">
-                  <span class="fee-card-label">Payment Date</span>
-                  <span class="fee-card-value">${escapeHtml(record.payment_date || '—')}</span>
-                </div>
-                <div class="fee-card-actions">
-                  ${primaryAction}
-                  <button class="btn btn-secondary btn-sm" onclick="openStudentFeeEdit(${student.id}, ${monthlyFee !== null ? monthlyFee : 0})"><i class="fa-solid fa-sliders"></i> Fee Setup</button>
-                </div>
-              </div>
-            </div>`;
-          }).join('')}
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:36px;"><input type="checkbox" id="feeSelectAll" onchange="toggleAllFeeChecks(this)" title="Select all"></th>
+                <th style="text-align:left;">Admission No</th>
+                <th style="text-align:left;">Student</th>
+                <th style="text-align:left;">Class</th>
+                <th style="text-align:center;">Months due</th>
+                <th style="text-align:right;">Outstanding</th>
+                <th style="text-align:center;">Status</th>
+                <th style="text-align:right;">Pay now (Rs.)</th>
+                <th style="text-align:center;">Receipt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => {
+                const s = r.student;
+                const adm = escapeHtml(s.admissionNumber || s.roll_no || '—');
+                const cls = escapeHtml(feeClassName({ classId: s.classId, className: '' }));
+                const statusBadge = r.status === 'Unpaid'
+                  ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;">Unpaid</span>'
+                  : r.status === 'Partially Paid'
+                    ? '<span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Partial</span>'
+                    : '<span class="badge" style="background:rgba(59,130,246,0.15);color:#3b82f6;">Annual due</span>';
+                const disabled = !r.anchor ? 'disabled' : '';
+                const title = r.anchor ? '' : 'title="No voucher yet — generate vouchers first"';
+                return `
+                <tr>
+                  <td><input type="checkbox" class="fee-row-check" data-student="${s.id}" ${disabled} ${title} onchange="updateFeeBulkBar()"></td>
+                  <td style="text-align:left;">${adm}</td>
+                  <td style="text-align:left; font-weight:600;">${escapeHtml(s.name || 'Student')}</td>
+                  <td style="text-align:left;">${cls}</td>
+                  <td style="text-align:center;">${r.months || '—'}</td>
+                  <td style="text-align:right; font-weight:700;">${formatFeeCurrency(r.dues.totalNow)}</td>
+                  <td style="text-align:center;">${statusBadge}</td>
+                  <td style="text-align:right;">
+                    <input type="number" class="form-input fee-pay-input" data-student="${s.id}" min="0" step="any"
+                      value="${r.dues.totalNow.toFixed(2)}" ${disabled} ${title}
+                      style="width:110px; text-align:right; padding:6px 8px;" oninput="updateFeeBulkBar()">
+                  </td>
+                  <td style="text-align:center;">
+                    <button type="button" class="btn btn-secondary btn-sm" ${disabled} ${title}
+                      onclick="paySingleStudent(${s.id})"><i class="fas fa-money-bill-wave"></i></button>
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
         </div>`;
     }
 
-    function toggleFeeCard(id) {
-      const card = document.getElementById(`fee-card-${id}`);
-      if (!card) return;
-      const header = card.querySelector('.fee-card-header');
-      const body = document.getElementById(`fee-card-body-${id}`);
-      if (card.classList.contains('expanded')) {
-        card.classList.remove('expanded');
-        if (header) header.setAttribute('aria-expanded', 'false');
-        if (body) body.setAttribute('aria-hidden', 'true');
-      } else {
-        card.classList.add('expanded');
-        if (header) header.setAttribute('aria-expanded', 'true');
-        if (body) body.setAttribute('aria-hidden', 'false');
+    function toggleAllFeeChecks(master) {
+      document.querySelectorAll('.fee-row-check:not(:disabled)').forEach(cb => { cb.checked = master.checked; });
+      updateFeeBulkBar();
+    }
+
+    function feeSelectedPayments() {
+      // Returns [{row, voucherId, paidTuition, paidAC}] for checked rows with an amount.
+      const E = VG();
+      const out = [];
+      document.querySelectorAll('.fee-row-check:checked').forEach(cb => {
+        const sid = cb.dataset.student;
+        const student = window.feeCenter.students.find(s => String(s.id) === String(sid));
+        if (!student) return;
+        const { dues, anchor } = feeStudentDues(student);
+        if (!anchor) return;
+        const input = document.querySelector(`.fee-pay-input[data-student="${sid}"]`);
+        const amount = Math.max(0, parseFloat(input?.value) || 0);
+        if (!(amount > 0)) return;
+        // Tuition first (the engine spreads it across unpaid months, oldest first),
+        // then annual charges. Anything beyond everything owed is refused server-side.
+        const paidTuition = E.roundRupees(Math.min(amount, dues.tuitionNow));
+        const paidAC = E.roundRupees(Math.min(Math.max(0, amount - dues.tuitionNow), dues.annualCharges));
+        out.push({ student, dues, anchor, paidTuition, paidAC });
+      });
+      return out;
+    }
+
+    function updateFeeBulkBar() {
+      const bar = document.getElementById('feeBulkBar');
+      const countEl = document.getElementById('feeBulkCount');
+      const payments = feeSelectedPayments();
+      if (countEl) countEl.textContent = `${payments.length} student${payments.length === 1 ? '' : 's'} selected`;
+      if (bar) bar.style.display = payments.length ? 'flex' : 'none';
+      const dateInput = document.getElementById('feeBulkDate');
+      if (dateInput && !dateInput.value) {
+        const d = new Date();
+        dateInput.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       }
     }
 
-    async function quickMarkPaidAdmin(event, studentId, amountDue, amountPaidSoFar, element) {
-      event.stopPropagation();
-      if (element.dataset.confirming !== 'true') {
-        const originalText = element.innerText;
-        element.dataset.confirming = 'true';
-        element.innerText = 'Tap again to pay';
-        setTimeout(() => {
-          if (element.dataset.confirming === 'true') {
-            element.dataset.confirming = 'false';
-            element.innerText = originalText;
-          }
-        }, 2500);
+    async function submitBulkFeePayment() {
+      const payments = feeSelectedPayments();
+      if (!payments.length) {
+        showToast('Select at least one student with an amount above zero', 'warning');
         return;
       }
-      element.dataset.confirming = 'false';
-      element.style.pointerEvents = 'none';
-      element.style.opacity = '0.5';
+      const btn = document.getElementById('feeBulkSubmit');
+      const method = document.getElementById('feeBulkMethod')?.value || 'cash';
+      const paymentDate = document.getElementById('feeBulkDate')?.value || '';
+      const total = payments.reduce((a, p) => a + p.paidTuition + p.paidAC, 0);
+      if (!confirm(`Record ${payments.length} payment${payments.length === 1 ? '' : 's'} totalling ${formatFeeCurrency(total)}?`)) return;
+
+      btn.disabled = true;
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recording...';
       try {
-        const month = document.getElementById('feeMonthFilter')?.value || new Date().toISOString().slice(0, 7);
-        const due = Number(amountDue) || 0;
-        const data = {
-          student_id: studentId,
-          month: month,
-          amount_due: due,
-          amount_paid: due,
-          payment_method: 'cash',
-          payment_date: new Date().toISOString().split('T')[0],
-          notes: 'Quick mark paid'
-        };
-        const res = await apiFetch('/api/fees/payments', {
+        const res = await apiFetch('/api/fees/receipts/bulk', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify({
+            paymentMethod: method,
+            paymentDate,
+            items: payments.map(p => ({
+              voucherId: p.anchor.id,
+              paidTuition: p.paidTuition,
+              paidAC: p.paidAC
+            }))
+          })
         });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Server returned ${res.status}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
+
+        const okResults = (data.results || []).filter(r => r.ok);
+        const failed = (data.results || []).filter(r => !r.ok);
+        window._lastFeeReceipts = okResults.map(r => r.receipt);
+        renderFeeBulkResults(okResults, failed);
+
+        if (okResults.length) {
+          showToast(`✅ ${okResults.length} receipt${okResults.length === 1 ? '' : 's'} issued`, 'success');
+          await loadFeeCenter(true);
+          renderActiveFeeSubTab();
         }
-        await loadFeeData(month);
-        showToast('Payment recorded successfully', 'success');
+        if (failed.length) {
+          showToast(`${failed.length} payment${failed.length === 1 ? '' : 's'} refused — see details below`, 'warning');
+        }
       } catch (err) {
-        showToast('Failed to record payment: ' + err.message, 'error');
-        element.style.pointerEvents = 'auto';
-        element.style.opacity = '1';
+        showToast('Bulk payment failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
       }
     }
 
-    function populateFeeSetupStudentOptions() {
-      const select = document.getElementById('feeSetupStudent');
-      if (!select) return;
-      select.innerHTML = '<option value="">Select a student</option>';
-      (window.appData.students || []).forEach(student => {
-        const option = document.createElement('option');
-        option.value = student.id;
-        option.textContent = `${student.name}${student.roll_no ? ` • ${student.roll_no}` : ''}`;
-        select.appendChild(option);
+    function paySingleStudent(studentId) {
+      const cb = document.querySelector(`.fee-row-check[data-student="${studentId}"]`);
+      if (cb) cb.checked = true;
+      updateFeeBulkBar();
+      submitBulkFeePayment();
+    }
+
+    function cacheFeeReceipt(receipt) {
+      window._feeReceiptCache = window._feeReceiptCache || {};
+      const key = String(receipt.id || receipt.receiptNo || Math.random());
+      window._feeReceiptCache[key] = receipt;
+      return key;
+    }
+
+    function printFeeReceiptByKey(key) {
+      printFeeReceipt((window._feeReceiptCache || {})[key]);
+    }
+
+    function renderFeeBulkResults(okResults, failed) {
+      const el = document.getElementById('feeBulkResults');
+      if (!el) return;
+      if (!okResults.length && !failed.length) { el.innerHTML = ''; return; }
+      const rows = okResults.map(r => {
+        const rc = r.receipt || {};
+        const key = cacheFeeReceipt(rc);
+        return `<tr>
+          <td style="text-align:left;">${escapeHtml(rc.receiptNo || '—')}</td>
+          <td style="text-align:left;">${escapeHtml(rc.studentName || '—')}</td>
+          <td style="text-align:right; font-weight:700;">${formatFeeCurrency(rc.amount)}</td>
+          <td style="text-align:center;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="printFeeReceiptByKey('${escapeHtml(key)}')"><i class="fas fa-print"></i> Print</button>
+          </td>
+        </tr>`;
+      }).join('');
+      const failRows = failed.map(f => `<div style="font-size:0.8rem;color:var(--danger);">${escapeHtml(f.error || 'Refused')}</div>`).join('');
+      el.innerHTML = `
+        <div class="section-card" style="border:1px solid var(--border);">
+          <div class="section-header" style="padding:12px 16px;">
+            <div class="section-title" style="font-size:0.9rem;">Receipts issued</div>
+          </div>
+          <div class="section-body" style="padding:12px 16px;">
+            ${okResults.length ? `<div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+              <th style="text-align:left;">Receipt</th><th style="text-align:left;">Student</th>
+              <th style="text-align:right;">Amount</th><th style="text-align:center;"></th></tr></thead>
+              <tbody>${rows}</tbody></table></div>` : ''}
+            ${failRows}
+          </div>
+        </div>`;
+    }
+
+    // ---------------- Pending Fees ----------------
+
+    function renderFeePending() {
+      const wrap = document.getElementById('feePendingTableWrap');
+      if (!wrap || !window.feeCenter.loaded) return;
+      const E = VG();
+      const lateFine = window.feeCenter.settings.lateFine || 0;
+      const classFilter = document.getElementById('feePendingClassFilter')?.value || '';
+      const monthFilter = document.getElementById('feePendingMonthFilter')?.value || '';
+      const yearFilter = document.getElementById('feePendingYearFilter')?.value || '';
+      const statusFilter = document.getElementById('feePendingStatusFilter')?.value || '';
+      const query = (document.getElementById('feePendingSearch')?.value || '').toLowerCase().trim();
+
+      // A voucher is pending while money is still owed on it: its own tuition
+      // (plus fine) or the student's annual charges. Annual charges are shown
+      // once — on the student's most recent voucher — so they are not repeated
+      // on every old month.
+      const latestPeriodByStudent = new Map();
+      window.feeCenter.vouchers.forEach(v => {
+        if (v.studentId == null) return;
+        const key = String(v.studentId);
+        latestPeriodByStudent.set(key, Math.max(latestPeriodByStudent.get(key) ?? -Infinity, E.periodOf(v)));
       });
-    }
-
-    function openFeeModal(recordId) {
-      const modal = document.getElementById('feePaymentModal');
-      if (!modal) return;
-      const record = (window.appData.fees || []).find(item => Number(item.id) === Number(recordId) || Number(item.payment_id) === Number(recordId));
-      const studentSelect = document.getElementById('feeRecordStudent');
-      studentSelect.innerHTML = '<option value="">Select student</option>';
-      (window.appData.students || []).forEach(student => {
-        const option = document.createElement('option');
-        option.value = student.id;
-        option.textContent = `${student.name}${student.roll_no ? ` • ${student.roll_no}` : ''}`;
-        if (record && Number(student.id) === Number(record.student_id)) option.selected = true;
-        studentSelect.appendChild(option);
+      let vouchers = window.feeCenter.vouchers.filter(v => {
+        const student = window.feeCenter.students.find(s => String(s.id) === String(v.studentId));
+        const annualLeft = student
+          ? Math.max(0, (Number(student.annualCharges) || 0) - (Number(student.paidAnnualCharges) || 0))
+          : 0;
+        const ownLeft = E.tuitionOwed(v, lateFine);
+        const isLatest = latestPeriodByStudent.get(String(v.studentId)) === E.periodOf(v);
+        return ownLeft > 0.004 || (annualLeft > 0.004 && isLatest);
       });
-      document.getElementById('feeRecordId').value = record ? (record.id || record.payment_id || '') : '';
-      document.getElementById('feeRecordMonth').value = record?.month_year || new Date().toISOString().slice(0, 7);
-      document.getElementById('feeRecordDue').value = record?.amount_due || '';
-      document.getElementById('feeRecordPaid').value = record?.amount_paid || '';
-      document.getElementById('feeRecordMethod').value = record?.payment_method || 'cash';
-      document.getElementById('feeRecordNotes').value = record?.notes || '';
-      modal.style.display = 'flex';
+      if (classFilter) vouchers = vouchers.filter(v => String(v.classId) === String(classFilter));
+      if (monthFilter) vouchers = vouchers.filter(v => v.month === monthFilter);
+      if (yearFilter) vouchers = vouchers.filter(v => String(v.year) === String(yearFilter));
+      if (statusFilter) vouchers = vouchers.filter(v => v.status === statusFilter);
+      if (query) {
+        vouchers = vouchers.filter(v =>
+          String(v.studentName || '').toLowerCase().includes(query) ||
+          String(v.admissionNumber || '').toLowerCase().includes(query) ||
+          String(v.className || '').toLowerCase().includes(query));
+      }
+      vouchers.sort((a, b) => E.periodOf(b) - E.periodOf(a) || String(a.studentName).localeCompare(String(b.studentName)));
+
+      if (!vouchers.length) {
+        wrap.innerHTML = `<div class="empty-state"><div class="icon">✅</div>
+          <div class="msg">No pending fees</div>
+          <div class="sub">Every generated voucher is fully paid${statusFilter || monthFilter || yearFilter || classFilter || query ? ' for these filters' : ''}.</div></div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Student</th>
+                <th style="text-align:left;">Admission No</th>
+                <th style="text-align:left;">Class</th>
+                <th style="text-align:center;">Month</th>
+                <th style="text-align:right;">Fee</th>
+                <th style="text-align:right;">Paid</th>
+                <th style="text-align:right;">Remaining</th>
+                <th style="text-align:right;">Total outstanding</th>
+                <th style="text-align:center;">Status</th>
+                <th style="text-align:center;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${vouchers.map(v => {
+                const student = window.feeCenter.students.find(s => String(s.id) === String(v.studentId));
+                const paid = (Number(v.paidTuition) || 0) + (Number(v.paidAC) || 0);
+                const remaining = E.tuitionOwed(v, lateFine);
+                const statusCls = v.status === 'Unpaid' ? '#ef4444' : v.status === 'Partially Paid' ? '#f59e0b' : '#3b82f6';
+                return `
+                <tr>
+                  <td style="text-align:left; font-weight:600;">${escapeHtml(v.studentName || 'Student')}</td>
+                  <td style="text-align:left;">${escapeHtml(v.admissionNumber || '—')}</td>
+                  <td style="text-align:left;">${escapeHtml(v.className || feeClassName(v))}</td>
+                  <td style="text-align:center;">${escapeHtml(v.month)} ${escapeHtml(v.year)}</td>
+                  <td style="text-align:right;">${formatFeeCurrency(v.amount)}</td>
+                  <td style="text-align:right;">${formatFeeCurrency(paid)}</td>
+                  <td style="text-align:right; font-weight:700; color:${remaining > 0 ? 'var(--danger, #dc2626)' : 'var(--success)'};">${formatFeeCurrency(remaining)}</td>
+                  <td style="text-align:right;" title="Includes earlier unpaid months and annual charges">${formatFeeCurrency(v.balanceDue || remaining)}</td>
+                  <td style="text-align:center;"><span class="badge" style="background:rgba(148,163,184,0.15);color:${statusCls};">${escapeHtml(v.status || 'Unpaid')}</span></td>
+                  <td style="text-align:center;">
+                    ${student ? `<button type="button" class="btn btn-primary btn-sm" onclick="collectStudentFromPending(${student.id})"><i class="fas fa-money-bill-wave"></i> Collect</button>` : ''}
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
     }
 
-    function closeFeeModal() {
-      const modal = document.getElementById('feePaymentModal');
-      if (modal) modal.style.display = 'none';
+    function collectStudentFromPending(studentId) {
+      switchFeeSubTab('collect');
+      const classSel = document.getElementById('feeCollectClassFilter');
+      const student = window.feeCenter.students.find(s => String(s.id) === String(studentId));
+      if (classSel && student) classSel.value = String(student.classId ?? '');
+      const search = document.getElementById('feeCollectSearch');
+      if (search) search.value = student ? String(student.name || '') : '';
+      renderFeeCollect();
+      const cb = document.querySelector(`.fee-row-check[data-student="${studentId}"]`);
+      if (cb) {
+        cb.checked = true;
+        cb.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        updateFeeBulkBar();
+      }
     }
 
-    function openFeePaymentModal() {
-      const modal = document.getElementById('feePaymentModal');
-      if (modal) modal.style.display = 'flex';
-      // Set default month to current month
-      document.getElementById('feeRecordMonth').value = new Date().toISOString().slice(0, 7);
+    // ---------------- Payment History ----------------
+
+    async function loadFeeReceipts() {
+      const wrap = document.getElementById('paymentHistoryTableWrap');
+      if (!wrap) return;
+      wrap.innerHTML = '<div class="empty-state"><div class="loader-spinner" style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div><div style="font-size:0.85rem;color:var(--text-secondary);">Loading receipts...</div></div>';
+      try {
+        const res = await apiFetch('/api/fees/receipts');
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const receipts = await res.json();
+        window.feeCenter.receipts = Array.isArray(receipts) ? receipts : [];
+        window.feeCenter.receiptsLoaded = true;
+        renderFeeReceipts();
+      } catch (err) {
+        wrap.innerHTML = `<div class="empty-state"><div class="msg" style="color:var(--danger);">Failed to load receipts</div><div class="sub">${escapeHtml(err.message)}</div></div>`;
+      }
     }
+
+    function renderFeeReceipts() {
+      const wrap = document.getElementById('paymentHistoryTableWrap');
+      if (!wrap) return;
+      const receipts = window.feeCenter.receipts || [];
+      if (!receipts.length) {
+        wrap.innerHTML = `<div class="empty-state"><div class="icon">🧾</div>
+          <div class="msg">No receipts yet</div>
+          <div class="sub">Payments recorded through Collect Fee or the Voucher Generator appear here.</div></div>`;
+        return;
+      }
+      wrap.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Receipt #</th>
+                <th style="text-align:left;">Student</th>
+                <th style="text-align:left;">Class</th>
+                <th style="text-align:center;">Month</th>
+                <th style="text-align:right;">Amount</th>
+                <th style="text-align:center;">Method</th>
+                <th style="text-align:center;">Date</th>
+                <th style="text-align:left;">Received By</th>
+                <th style="text-align:center;">Status</th>
+                <th style="text-align:center;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${receipts.map(r => {
+                const reversed = !!r.reversedAt;
+                const method = escapeHtml((r.paymentMethod || 'cash').replace(/_/g, ' '));
+                const date = escapeHtml(r.paymentDate || (r.receivedAt || '').slice(0, 10) || '—');
+                const period = [r.month, r.year].filter(Boolean).join(' ');
+                return `
+                <tr style="${reversed ? 'opacity:0.55;' : ''}">
+                  <td style="text-align:left; font-weight:700;">${escapeHtml(r.receiptNo || `RCP-${r.id}`)}</td>
+                  <td style="text-align:left;">${escapeHtml(r.studentName || '—')}</td>
+                  <td style="text-align:left;">${escapeHtml(r.className || '—')}</td>
+                  <td style="text-align:center;">${escapeHtml(period || '—')}</td>
+                  <td style="text-align:right; font-weight:700;">${formatFeeCurrency(r.amount)}</td>
+                  <td style="text-align:center;">${method}</td>
+                  <td style="text-align:center;">${date}</td>
+                  <td style="text-align:left;">${escapeHtml(r.receivedByName || r.receivedBy || '—')}</td>
+                  <td style="text-align:center;">${reversed
+                    ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;">Reversed</span>'
+                    : '<span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;">Issued</span>'}</td>
+                  <td style="text-align:center;">
+                    <button type="button" class="btn btn-secondary btn-sm" ${reversed ? 'disabled' : ''}
+                      onclick="printFeeReceiptByKey('${escapeHtml(cacheFeeReceipt(r))}')"><i class="fas fa-print"></i></button>
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    // ---------------- Receipt printing ----------------
+
+    function printFeeReceipt(receipt) {
+      if (!receipt) return;
+      const E = VG();
+      const brand = window.feeCenter.branding || {};
+      const school = escapeHtml(brand.schoolName || brand.instituteName || 'The Eye');
+      const lines = (receipt.allocations && receipt.allocations.length)
+        ? receipt.allocations.map(a => `<tr><td>${escapeHtml(a.month || '')} ${escapeHtml(a.year || '')}</td><td style="text-align:right">${formatFeeCurrency(a.amount)}</td></tr>`).join('')
+        : `<tr><td>${escapeHtml(receipt.month || '')} ${escapeHtml(receipt.year || '')}</td><td style="text-align:right">${formatFeeCurrency(receipt.amount)}</td></tr>`;
+      const w = window.open('', '_blank', 'width=420,height=640');
+      if (!w) { showToast('Pop-up blocked — allow pop-ups to print the receipt', 'warning'); return; }
+      w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${escapeHtml(receipt.receiptNo || receipt.id)}</title>
+        <style>
+          body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:24px;font-size:13px}
+          h1{font-size:17px;margin:0 0 2px;text-align:center}
+          .sub{text-align:center;color:#555;font-size:11px;margin-bottom:14px}
+          table{width:100%;border-collapse:collapse;margin:10px 0}
+          td{padding:5px 4px;border-bottom:1px dashed #ccc;vertical-align:top}
+          .tot td{border-bottom:none;border-top:2px solid #111;font-weight:bold;font-size:14px}
+          .meta td{border:none;padding:3px 4px}
+          .foot{text-align:center;color:#555;font-size:11px;margin-top:18px}
+          .words{font-style:italic;color:#333;margin-top:6px}
+          @media print{body{margin:12mm}}
+        </style></head><body>
+        <h1>${school}</h1>
+        <div class="sub">FEE RECEIPT${receipt.reversedAt ? ' — REVERSED' : ''}</div>
+        <table class="meta">
+          <tr><td>Receipt No</td><td style="text-align:right;font-weight:bold">${escapeHtml(receipt.receiptNo || `RCP-${receipt.id}`)}</td></tr>
+          <tr><td>Date</td><td style="text-align:right">${escapeHtml(receipt.paymentDate || (receipt.receivedAt || '').slice(0, 10))}</td></tr>
+          <tr><td>Received By</td><td style="text-align:right">${escapeHtml(receipt.receivedByName || receipt.receivedBy || '—')}</td></tr>
+          <tr><td>Method</td><td style="text-align:right">${escapeHtml((receipt.paymentMethod || 'cash').replace(/_/g, ' '))}</td></tr>
+        </table>
+        <table class="meta">
+          <tr><td>Student</td><td style="text-align:right;font-weight:bold">${escapeHtml(receipt.studentName || '—')}</td></tr>
+          <tr><td>Class</td><td style="text-align:right">${escapeHtml(receipt.className || '—')}</td></tr>
+        </table>
+        <table>
+          <tr><td style="font-weight:bold">Month</td><td style="text-align:right;font-weight:bold">Amount</td></tr>
+          ${lines}
+          <tr class="tot"><td>Total Received</td><td style="text-align:right">${formatFeeCurrency(receipt.amount)}</td></tr>
+        </table>
+        <div class="words">(${E.numberToWords ? E.numberToWords(Number(receipt.amount) || 0) : ''})</div>
+        <div class="foot">Thank you. Please collect this receipt as proof of payment.</div>
+        <\/script>
+        </body></html>`);
+      w.document.close();
+    }
+
+    // ---------------- Pending Fees render ----------------
+
+    function renderFeePendingStub() {}
+
+    // ── Fee rates (fee_structures): still the source of monthly/admission/transport
+    // amounts for voucher generation, edited from the "Fee Rates" button. ──
+
+    function renderFeeStructureTableLegacy() {
+      // Kept for compatibility; the Fee Rates modal saves through saveFeeStructure.
+    }
+
+    function renderFeesLegacy() {
+      // Superseded by the voucher-based fee center (renderFeeCollect / renderFeePending).
+    }
+
+    function openFeePaymentModalLegacy() {}
 
     function openFeeStructureModal() {
       const modal = document.getElementById('feeStructureModal');
       if (modal) modal.style.display = 'flex';
+      // Rates load lazily the first time the modal opens.
+      if (!window._feeStructuresCache || !window._feeStructuresCache.length) loadFeeStructures();
       // Reset form
       document.getElementById('feeStructureType').value = 'class';
       document.getElementById('feeStructureMonthly').value = '';
@@ -4397,12 +4714,13 @@
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || `Server returned ${res.status}`);
         }
-        showToast('✅ Fee structure saved', 'success');
+        showToast('✅ Fee rates saved', 'success');
         closeFeeStructureModal();
         await loadFeeStructures();
-        const month = document.getElementById('feeMonthFilter')?.value || new Date().toISOString().slice(0, 7);
-        await loadFeeData(month);
-        renderFeeStructureTable();
+        // Fee rates feed voucher amounts, so refresh anything already on screen.
+        await loadFeeCenter(true);
+        if (window.feeCenter.activeSubTab === 'collect') renderFeeCollect();
+        else if (window.feeCenter.activeSubTab === 'pending') renderFeePending();
         if (typeof renderStudentTable === 'function') renderStudentTable();
       } catch (err) {
         showToast(`❌ ${err.message}`, 'error');
@@ -4528,78 +4846,8 @@
       document.getElementById('feeStructureDiscount').value = '';
     }
 
-    function saveFeeSetup() {
-      const studentId = document.getElementById('feeSetupStudent').value;
-      const monthlyFee = document.getElementById('feeSetupMonthly').value;
-      const admissionFee = document.getElementById('feeSetupAdmission').value;
-      const transportFee = document.getElementById('feeSetupTransport').value;
-      const discount = document.getElementById('feeSetupDiscount').value;
-      if (!studentId) {
-        showToast('⚠️ Choose a student first', 'warning');
-        return;
-      }
-      const student = (window.appData.students || []).find(item => String(item.id) === String(studentId));
-      const studentClass = (window.appData.classes || []).find(cls => String(cls.id) === String(student?.class_id));
-      const due = Number(monthlyFee || 0) + Number(admissionFee || 0) + Number(transportFee || 0) - Number(discount || 0);
-      const setupEntry = {
-        id: Date.now(),
-        student_id: studentId,
-        student_name: student?.name || 'Student',
-        class_name: studentClass?.name || 'Unassigned',
-        class_section: studentClass?.section || null,
-        month_year: new Date().toISOString().slice(0, 7),
-        amount_due: Math.max(0, due),
-        amount_paid: 0,
-        status: 'unpaid',
-        payment_date: '',
-        notes: 'Fee setup saved from admin UI.'
-      };
-      const existingIndex = (window.appData.fees || []).findIndex(item => Number(item.student_id) === Number(studentId) && String(item.month_year) === String(setupEntry.month_year));
-      if (existingIndex >= 0) window.appData.fees[existingIndex] = { ...window.appData.fees[existingIndex], ...setupEntry };
-      else window.appData.fees.unshift(setupEntry);
-      renderFees();
-      showToast('✅ Fee setup saved locally', 'success');
-    }
-
-    async function saveFeeRecord() {
-      const studentId = document.getElementById('feeRecordStudent').value;
-      const monthYear = document.getElementById('feeRecordMonth').value;
-      const amountDue = Number(document.getElementById('feeRecordDue').value || 0);
-      const amountPaid = Number(document.getElementById('feeRecordPaid').value || 0);
-      const method = document.getElementById('feeRecordMethod').value;
-      const notes = document.getElementById('feeRecordNotes').value;
-      if (!studentId || !monthYear) {
-        showToast('⚠️ Student and month are required', 'warning');
-        return;
-      }
-
-      try {
-        const res = await apiFetch('/api/fees/payments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            student_id: parseInt(studentId),
-            month: monthYear,
-            amount_due: amountDue,
-            amount_paid: amountPaid,
-            payment_method: method,
-            payment_date: amountPaid > 0 ? monthYear + '-10' : '',
-            notes
-          })
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Server returned ${res.status}`);
-        }
-
-        // Reload overview + stats from server
-        await loadFeeData();
-        closeFeeModal();
-        showToast('✅ Fee record saved', 'success');
-      } catch (err) {
-        showToast(`❌ ${err.message}`, 'error');
-      }
-    }
+    // saveFeeSetup / saveFeeRecord removed: payments now go through the voucher
+    // receipts API (Collect Fee tab), which keeps every receipt individual.
 
     function showAdminSkeletons() {
       document.getElementById('classesTableWrap').innerHTML = getTableSkeletonHtml(5, 4);
@@ -4608,7 +4856,8 @@
       document.getElementById('attendanceTableWrap').innerHTML = getTableSkeletonHtml(7, 5);
       document.getElementById('statsTableWrap').innerHTML = getTableSkeletonHtml(7, 5);
       document.getElementById('announcementsList').innerHTML = getAnnouncementsSkeletonHtml(3);
-      document.getElementById('feesTableWrap').innerHTML = getTableSkeletonHtml(6, 4);
+      const feeWrap = document.getElementById('feesTableWrap') || document.getElementById('feeCollectTableWrap');
+      if (feeWrap) feeWrap.innerHTML = getTableSkeletonHtml(6, 4);
     }
 
     function getTableSkeletonHtml(cols = 4, rows = 5) {
@@ -5591,9 +5840,54 @@
       }
     }
 
+    function populateStudentClassFilter() {
+      const classFilter = document.getElementById('studentClassFilter');
+      if (!classFilter) return;
+
+      // Save current selection
+      const currentValue = classFilter.value;
+
+      // Rebuild options
+      classFilter.innerHTML = '<option value="">All Classes</option><option value="unassigned">Unassigned</option>';
+
+      // Add classes from system
+      (window.appData.classes || []).forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls.id;
+        option.textContent = classDisplayName(cls);
+        classFilter.appendChild(option);
+      });
+
+      // Restore selection if it still exists
+      if (currentValue) {
+        const optionExists = Array.from(classFilter.options).some(opt => opt.value === currentValue);
+        if (optionExists) {
+          classFilter.value = currentValue;
+        }
+      }
+    }
+
     function filterStudents() {
-      // Display all students without filtering
-      renderStudentTable(window.appData.students);
+      const searchInput = document.getElementById('studentSearchInput');
+      const classFilter = document.getElementById('studentClassFilter');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const classId = classFilter ? classFilter.value : '';
+
+      const filtered = window.appData.students.filter(student => {
+        // Match search query (name or roll number)
+        const matchesSearch = !query ||
+          (student.name && student.name.toLowerCase().includes(query)) ||
+          (student.roll_no && student.roll_no.toLowerCase().includes(query));
+
+        // Match class filter
+        const matchesClass = !classId ||
+          (classId === 'unassigned' && !student.class_id) ||
+          (student.class_id === parseInt(classId, 10));
+
+        return matchesSearch && matchesClass;
+      });
+
+      renderStudentTable(filtered);
     }
 
     // Classes have no per-class cap: a school may put any number of students in a
@@ -7487,8 +7781,7 @@
       history.replaceState(null, '', '#' + newTabId);
 
       if (newTabId === 'tab-fees') {
-        populateFeeSetupStudentOptions();
-        renderFees();
+        loadFeeCenter().then(() => { if (window.feeCenter.loaded) renderActiveFeeSubTab(); });
       }
 
       // The Coordinators tab always pulls fresh data so branch edits made
@@ -7504,6 +7797,12 @@
         renderAttendanceTabLive();
       }
 
+      // Students tab needs to populate class filter and filter after switch
+      if (newTabId === 'tab-students') {
+        populateStudentClassFilter();
+        filterStudents();
+      }
+
       if (clearSearch) {
         if (newTabId === 'tab-classes') {
           closeClassIsolation();
@@ -7513,10 +7812,14 @@
           const inp = document.getElementById('teacherSearchInput');
           if (inp) { inp.value = ''; filterTeachers(); }
         } else if (newTabId === 'tab-students') {
+          const searchInp = document.getElementById('studentSearchInput');
+          const classFilter = document.getElementById('studentClassFilter');
+          if (searchInp) searchInp.value = '';
+          if (classFilter) classFilter.value = '';
           filterStudents();
         }
       }
-      
+
       // Update sticky bar visibility
       updateSaveBar();
     }

@@ -78,6 +78,12 @@ function createFeeRouter({ pool, requireAuth }) {
       receivedAt: new Date(r.received_at).toISOString(),
       receivedBy: r.received_by || '',
       receivedByName: r.received_by_name || '',
+      paymentMethod: r.payment_method || '',
+      paymentDate: r.payment_date ? (() => {
+        const d = new Date(r.payment_date)
+        const pad = (n) => String(n).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      })() : '',
       allocations: Array.isArray(r.allocations) ? r.allocations : [],
       reversedAt: r.reversed_at ? new Date(r.reversed_at).toISOString() : null,
       reversedBy: r.reversed_by || null,
@@ -244,16 +250,19 @@ function createFeeRouter({ pool, requireAuth }) {
         `INSERT INTO fee_receipts (
            tenant_id, ref_id, receipt_no, voucher_id, student_id, student_name, class_name, month, year,
            paid_tuition, paid_ac, amount, allocations, received_at, received_by, received_by_name,
-           reversed_at, reversed_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17,$18)
+           payment_method, payment_date, reversed_at, reversed_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14,$15,$16,$17,$18,$19,$20)
          ON CONFLICT (tenant_id, ref_id) DO UPDATE SET
            paid_tuition = EXCLUDED.paid_tuition, paid_ac = EXCLUDED.paid_ac, amount = EXCLUDED.amount,
-           allocations = EXCLUDED.allocations, reversed_at = EXCLUDED.reversed_at, reversed_by = EXCLUDED.reversed_by`,
+           allocations = EXCLUDED.allocations, payment_method = EXCLUDED.payment_method,
+           payment_date = EXCLUDED.payment_date,
+           reversed_at = EXCLUDED.reversed_at, reversed_by = EXCLUDED.reversed_by`,
         [
           tenantId, num(p.id), p.receiptNo || `RCP-${num(p.id)}`, p.voucherId ?? null, p.studentId ?? null,
           p.studentName || null, p.className || null, p.month || null, p.year ? String(p.year) : null,
           num(p.paidTuition), num(p.paidAC), num(p.amount), JSON.stringify(p.allocations ?? []),
           p.receivedAt || new Date().toISOString(), p.receivedBy || null, p.receivedByName || null,
+          p.paymentMethod || null, p.paymentDate || null,
           p.reversedAt || null, p.reversedBy || null,
         ]
       )
@@ -510,6 +519,14 @@ function createFeeRouter({ pool, requireAuth }) {
     }
   })
 
+  /** The payment method and date a receipt records, cleaned for storage. */
+  function receiptPaymentFields(body) {
+    const method = String((body || {}).paymentMethod || 'cash').trim().slice(0, 40) || 'cash'
+    const rawDate = String((body || {}).paymentDate || '').trim()
+    const paymentDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : new Date().toISOString().slice(0, 10)
+    return { paymentMethod: method, paymentDate }
+  }
+
   /** Takes a payment and issues the receipt for it. */
   router.post('/receipts', auth, async (req, res) => {
     try {
@@ -519,6 +536,7 @@ function createFeeRouter({ pool, requireAuth }) {
         username: req.user.login_id || String(req.user.user_id),
         displayName: req.user.login_id || String(req.user.user_id),
       }
+      const fields = receiptPaymentFields(body)
 
       const result = await withTransaction(async (client) => {
         const db = await loadDb(client, tenantId, req.user)
@@ -531,6 +549,8 @@ function createFeeRouter({ pool, requireAuth }) {
         }, session)
         if (!outcome) return null
         outcome.receipt.receiptNo = `RCP-${tenantId}-${String(outcome.receipt.id).padStart(5, '0')}`
+        outcome.receipt.paymentMethod = fields.paymentMethod
+        outcome.receipt.paymentDate = fields.paymentDate
         await persist(client, tenantId, db)
         await syncLegacyPayments(client, tenantId, db, outcome.receipt)
         return outcome
@@ -538,6 +558,70 @@ function createFeeRouter({ pool, requireAuth }) {
 
       if (!result) return res.status(404).json({ error: 'That voucher no longer exists.' })
       res.json({ receipt: result.receipt, voucher: result.voucher })
+    } catch (err) {
+      sendError(res, err)
+    }
+  })
+
+  /**
+   * Bulk collection: one payment per student, each with its own receipt.
+   * Every item names the voucher the payment is anchored on (the student's
+   * oldest open voucher); the engine spreads the money across that student's
+   * unpaid months by itself. One bad item does not stop the others.
+   */
+  router.post('/receipts/bulk', auth, async (req, res) => {
+    try {
+      const body = req.body || {}
+      const items = Array.isArray(body.items) ? body.items : []
+      if (!items.length) return res.status(400).json({ error: 'No payments to record.' })
+      if (items.length > 200) return res.status(400).json({ error: 'Too many payments in one go (max 200).' })
+
+      const tenantId = req.user.tenant_id
+      const session = {
+        username: req.user.login_id || String(req.user.user_id),
+        displayName: req.user.login_id || String(req.user.user_id),
+      }
+      const fields = receiptPaymentFields(body)
+
+      const outcome = await withTransaction(async (client) => {
+        const db = await loadDb(client, tenantId, req.user)
+        const results = []
+        for (const item of items) {
+          const paidTuition = E.num(item && item.paidTuition)
+          const paidAC = E.num(item && item.paidAC)
+          if (!(paidTuition > 0) && !(paidAC > 0)) {
+            results.push({ voucherId: item && item.voucherId, ok: false, error: 'Amount must be above zero.' })
+            continue
+          }
+          try {
+            const receipt = E.receivePayment(db, item && item.voucherId, {
+              paidTuition,
+              paidAC,
+              waiveFine: !!(item && item.waiveFine),
+              advance: !!(item && item.advance),
+              monthlyCharges: !item || item.monthlyCharges !== false,
+            }, session)
+            if (!receipt) {
+              results.push({ voucherId: item && item.voucherId, ok: false, error: 'That voucher no longer exists.' })
+              continue
+            }
+            receipt.receipt.receiptNo = `RCP-${tenantId}-${String(receipt.receipt.id).padStart(5, '0')}`
+            receipt.receipt.paymentMethod = fields.paymentMethod
+            receipt.receipt.paymentDate = fields.paymentDate
+            results.push({ voucherId: item.voucherId, ok: true, receipt: receipt.receipt, voucher: receipt.voucher })
+          } catch (err) {
+            results.push({ voucherId: item && item.voucherId, ok: false, error: err.message || 'Payment refused.' })
+          }
+        }
+        const accepted = results.filter((r) => r.ok)
+        if (accepted.length) {
+          await persist(client, tenantId, db)
+          for (const r of accepted) await syncLegacyPayments(client, tenantId, db, r.receipt)
+        }
+        return { results, accepted: accepted.length }
+      })
+
+      res.json(outcome)
     } catch (err) {
       sendError(res, err)
     }

@@ -117,6 +117,15 @@
       document.getElementById('totalIncome').textContent = F.money(overview.total_income, currency)
       document.getElementById('totalExpenses').textContent = F.money(overview.total_expenses_paid, currency)
       document.getElementById('pendingPayments').textContent = F.money(overview.outstanding_obligations, currency)
+      const receivablesEl = document.getElementById('feeReceivables')
+      if (receivablesEl) receivablesEl.textContent = F.money(overview.fee_receivables, currency)
+      const collectionsNote = document.getElementById('feeCollectionsNote')
+      if (collectionsNote) {
+        const collected = Number(overview.fee_collections) || 0
+        collectionsNote.textContent = collected > 0
+          ? 'Student fees received this month: ' + F.money(collected, currency) + ' (tracked in Fees, not double-counted here)'
+          : ''
+      }
       document.getElementById('availableBalance').textContent = F.money(overview.available_after_obligations, currency)
       document.getElementById('openingCash').textContent = F.money(overview.opening_cash, currency)
       document.getElementById('actualCash').textContent = F.money(overview.actual_cash, currency)

@@ -1001,6 +1001,9 @@ async function createTables() {
       branding JSONB DEFAULT '{}'::jsonb,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    ALTER TABLE fee_receipts ADD COLUMN IF NOT EXISTS payment_method VARCHAR(40);
+    ALTER TABLE fee_receipts ADD COLUMN IF NOT EXISTS payment_date DATE;
   `)
 
   // Fix existing admin login_id values that were stored as the full concatenated ID
