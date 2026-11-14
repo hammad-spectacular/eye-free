@@ -112,6 +112,28 @@ var MENU_CONFIG = {
       ]
     },
     {
+      id: 'tab-finance-menu',
+      label: 'Finance',
+      icon: 'fa-wallet',
+      dropdown: [
+        {
+          label: 'Overview',
+          desc: 'Review cash, income, and obligations.',
+          href: '/finance-overview.html'
+        },
+        {
+          label: 'Payroll',
+          desc: 'Manage employees and payroll.',
+          href: '/finance-payroll.html'
+        },
+        {
+          label: 'Expenses',
+          desc: 'Track bills, recurring costs, and estimates.',
+          href: '/finance-expenses.html'
+        }
+      ]
+    },
+    {
       id: 'tab-automated',
       label: 'Automated',
       icon: 'fa-wand-magic-sparkles',

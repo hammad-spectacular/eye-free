@@ -2638,10 +2638,10 @@
           <div class="search-filter-container" style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
             <div style="flex:1; min-width:240px; position:relative;">
               <input type="text" id="studentSearchInput" class="form-input"
-                placeholder="🔍 Search by name or roll number..." oninput="filterStudents(); saveStudentViewDraft();">
+                placeholder="🔍 Search by name or roll number..." oninput="filterStudents()">
             </div>
             <div style="width:200px; min-width:150px;">
-              <select id="studentClassFilter" class="form-input" onchange="filterStudents(); saveStudentViewDraft();"
+              <select id="studentClassFilter" class="form-input" onchange="filterStudents()"
                 aria-label="Filter students by class">
                 <option value="">All Classes</option>
                 <option value="unassigned">Unassigned</option>
@@ -3605,7 +3605,10 @@
         const bq = branchQueryParam();
         const data = await apiFetch('/api/students' + bq).then(r => r.json());
         window.appData.students = Array.isArray(data) ? data : [];
-        if (activeTabId === 'tab-students') filterStudents();
+        if (activeTabId === 'tab-students') {
+          populateStudentClassFilter();
+          filterStudents();
+        }
       } catch (_) {}
     }
 
@@ -3624,6 +3627,11 @@
         const data = await apiFetch('/api/classes' + bq).then(r => r.json());
         window.appData.classes = Array.isArray(data) ? data : [];
         renderClasses();
+        // Also update student class filter if classes change
+        if (activeTabId === 'tab-students') {
+          populateStudentClassFilter();
+          filterStudents();
+        }
       } catch (_) {}
     }
 
@@ -3857,7 +3865,10 @@
         setTimeout(() => {
           if (activeTabId !== 'tab-classes') renderClasses();
           if (activeTabId !== 'tab-teachers') renderTeachers();
-          if (activeTabId !== 'tab-students') filterStudents();
+          if (activeTabId !== 'tab-students') {
+            populateStudentClassFilter();
+            filterStudents();
+          }
           if (activeTabId !== 'tab-attendance') renderAttendance();
           if (activeTabId !== 'tab-stats') renderStats();
           if (activeTabId !== 'tab-announcements') renderAnnouncements();
@@ -3930,7 +3941,10 @@
     function renderCurrentTab() {
       if (activeTabId === 'tab-classes') renderClasses();
       else if (activeTabId === 'tab-teachers') renderTeachers();
-      else if (activeTabId === 'tab-students') filterStudents();
+      else if (activeTabId === 'tab-students') {
+        populateStudentClassFilter();
+        filterStudents();
+      }
       else if (activeTabId === 'tab-attendance') renderAttendance();
       else if (activeTabId === 'tab-stats') renderStats();
       else if (activeTabId === 'tab-announcements') renderAnnouncements();
@@ -5588,6 +5602,33 @@
         showToast('Student removed', 'info');
       } catch (err) {
         showToast(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    function populateStudentClassFilter() {
+      const classFilter = document.getElementById('studentClassFilter');
+      if (!classFilter) return;
+
+      // Save current selection
+      const currentValue = classFilter.value;
+
+      // Rebuild options
+      classFilter.innerHTML = '<option value="">All Classes</option><option value="unassigned">Unassigned</option>';
+
+      // Add classes from system
+      (window.appData.classes || []).forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls.id;
+        option.textContent = classDisplayName(cls);
+        classFilter.appendChild(option);
+      });
+
+      // Restore selection if it still exists
+      if (currentValue) {
+        const optionExists = Array.from(classFilter.options).some(opt => opt.value === currentValue);
+        if (optionExists) {
+          classFilter.value = currentValue;
+        }
       }
     }
 
@@ -7522,8 +7563,9 @@
         renderAttendanceTabLive();
       }
 
-      // Students tab needs to filter after switch to show the correct data
+      // Students tab needs to populate class filter and filter after switch
       if (newTabId === 'tab-students') {
+        populateStudentClassFilter();
         filterStudents();
       }
 
@@ -7540,6 +7582,7 @@
           const classFilter = document.getElementById('studentClassFilter');
           if (searchInp) searchInp.value = '';
           if (classFilter) classFilter.value = '';
+          filterStudents();
         }
       }
 
