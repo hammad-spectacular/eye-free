@@ -13,6 +13,7 @@ const { requireAuth, setPool, isCoordinator, branchFilter, requireWritableBranch
 const { createFileStore } = require('./timetable/tt2/store')
 const { createPgTt2Store } = require('./timetable/tt2/store.pg.tt2')
 const { createTt2Router } = require('./timetable/tt2/routes')
+const { createFinanceRouter } = require('./finance-routes')
 
 const app = express()
 app.set('trust proxy', 1)
@@ -528,6 +529,7 @@ app.use('/api/tt2', tt2FeatureCheck, createTt2Router({
   pool,
   auth: tt2Auth
 }))
+app.use('/api/finance', createFinanceRouter({ pool, requireAuth }))
 
 // ============================================
 // CREATE TABLES ON STARTUP
