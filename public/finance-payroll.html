@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manage employee profiles, payroll periods, adjustments, advances, and payments.">
+  <title>Payroll — The Eye Finance</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/finance.css">
+</head>
+<body>
+  <div class="finance-shell">
+    <header class="finance-header">
+      <a class="finance-brand" href="/admin.html" aria-label="The Eye admin dashboard">
+        <span class="finance-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5h18M5.5 4.5h13A1.5 1.5 0 0 1 20 6v14H4V6a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h8m-8 4h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span class="finance-brand-name">The Eye</span><span class="finance-brand-divider" aria-hidden="true"></span><span class="finance-brand-section">Finance desk</span>
+      </a>
+      <div class="finance-header-actions">
+        <nav class="finance-nav" aria-label="Finance pages">
+          <a href="/finance-overview.html">Overview</a><a href="/finance-payroll.html" aria-current="page">Payroll</a><a href="/finance-expenses.html">Expenses</a>
+        </nav>
+        <a class="finance-button finance-button-small" href="/admin.html">&larr; Back to dashboard</a>
+        <button class="finance-icon-button" data-finance-theme type="button" aria-label="Switch theme" title="Switch theme"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </header>
+
+    <main class="finance-main">
+      <div id="financeAlert" class="finance-alert" role="status"></div>
+      <section class="finance-page-heading">
+        <div><p class="finance-kicker">Finance / People & pay</p><h1>Payroll, clearly accounted for.</h1><p>Keep employee records, approved obligations, salary advances, and actual payments connected.</p></div>
+        <div class="finance-heading-actions">
+          <label class="finance-field"><span class="finance-caption">Branch scope</span><select id="branchFilter" class="finance-control" aria-label="Branch scope"></select></label>
+        </div>
+      </section>
+
+      <section class="finance-panel">
+        <div class="finance-panel-head">
+          <div><span class="finance-panel-kicker">Payroll period</span><h2 style="margin-top:7px">Build and review a monthly run</h2><p>Daily/hourly units and partial-month salary require administrator review before payroll is generated.</p></div>
+          <label class="finance-field"><span class="finance-caption">Month</span><input id="payrollMonth" class="finance-control" type="month"></label>
+        </div>
+        <div class="finance-inline" style="margin-bottom:14px">
+          <button class="finance-button" id="previewButton" type="button">Review eligible employees</button>
+          <button class="finance-button finance-button-primary" id="generateButton" type="button" disabled>Generate payroll</button>
+          <button class="finance-button" id="approveButton" type="button" disabled>Approve period</button>
+          <span class="finance-caption" id="payrollSummary" aria-live="polite"></span>
+        </div>
+        <div class="finance-table-wrap">
+          <table class="finance-table">
+            <thead><tr><th>Employee</th><th>Pay basis</th><th>Rate</th><th>Review units / amount</th><th>Gross estimate</th></tr></thead>
+            <tbody id="previewRows"><tr><td colspan="5"><div class="finance-empty">Choose a month and review the eligible employees.</div></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="finance-panel">
+        <div class="finance-panel-head">
+          <div><span class="finance-panel-kicker">Payment obligations</span><h2 style="margin-top:7px">Payroll for selected month</h2><p>Approve a reviewed run before paying employees. Payments post once to the shared cash ledger.</p></div>
+          <button class="finance-button" id="reloadPayroll" type="button">Reload</button>
+        </div>
+        <div class="finance-table-wrap">
+          <table class="finance-table">
+            <thead><tr><th>Employee</th><th>Period</th><th>Basis</th><th class="numeric">Gross</th><th class="numeric">Adjustments</th><th class="numeric">Paid</th><th class="numeric">Outstanding</th><th>Status</th><th></th></tr></thead>
+            <tbody id="payrollRows"><tr><td colspan="9"><div class="finance-empty">Loading payroll…</div></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="finance-layout-main" style="margin-top:16px">
+        <article class="finance-panel">
+          <div class="finance-panel-head"><div><span class="finance-panel-kicker">Employee register</span><h2 style="margin-top:7px">Staff and teacher profiles</h2><p>Teacher profiles link to existing teacher records; other employees do not receive application logins.</p></div><button class="finance-button finance-button-primary" id="toggleEmployeeForm" type="button">Add employee</button></div>
+          <div class="finance-inline" style="margin-bottom:12px">
+            <label class="finance-field"><span class="finance-caption">Find an employee</span><input id="employeeSearch" class="finance-control" type="search" placeholder="Name, number, or job title"></label>
+            <label class="finance-field"><span class="finance-caption">Employment status</span><select id="employeeStatus" class="finance-control"><option value="active">Active</option><option value="all">All statuses</option><option value="on_leave">On leave</option><option value="left">Left</option><option value="inactive">Inactive</option></select></label>
+          </div>
+          <div class="finance-table-wrap">
+            <table class="finance-table">
+              <thead><tr><th>Employee</th><th>Category / role</th><th>Pay rate</th><th>Branch</th><th>Status</th><th></th></tr></thead>
+              <tbody id="employeeRows"><tr><td colspan="6"><div class="finance-empty">Loading employees…</div></td></tr></tbody>
+            </table>
+          </div>
+          <form id="employeeForm" class="finance-form finance-hidden" style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line)">
+            <div class="finance-panel-head"><div><h3>Add employee profile</h3><p>Enter a pay rate to include this employee in a payroll run.</p></div><button class="finance-button finance-button-small" id="cancelEmployeeForm" type="button">Close</button></div>
+            <div class="finance-form-grid">
+              <div class="finance-field finance-field-full"><label for="teacherLink">Link existing teacher <span class="finance-caption">Optional</span></label><select id="teacherLink" name="teacher_id"></select></div>
+              <div class="finance-field" id="employeeNameWrap"><label for="employeeName">Employee name</label><input id="employeeName" name="name" maxlength="150"></div>
+              <div class="finance-field"><label for="employeeNumber">Employee number <span class="finance-caption">Optional</span></label><input id="employeeNumber" name="employee_number" maxlength="50"></div>
+              <div class="finance-field"><label for="jobTitle">Job title</label><input id="jobTitle" name="job_title" maxlength="120"></div>
+              <div class="finance-field"><label for="employeeCategory">Category</label><select id="employeeCategory" name="category_id" required></select></div>
+              <div class="finance-field"><label for="employeeBranch">Branch</label><select id="employeeBranch" name="branch_id"></select></div>
+              <div class="finance-field"><label for="joiningDate">Joining date</label><input id="joiningDate" name="joining_date" type="date" required></div>
+              <div class="finance-field"><label for="employmentType">Employment type</label><select id="employmentType" name="employment_type"><option value="permanent">Permanent</option><option value="contract">Contract</option><option value="temporary">Temporary</option><option value="part_time">Part time</option></select></div>
+              <div class="finance-field"><label for="paymentBasis">Pay basis</label><select id="paymentBasis" name="payment_basis"><option value="monthly">Monthly</option><option value="daily">Daily</option><option value="hourly">Hourly</option><option value="contract">Per contract</option></select></div>
+              <div class="finance-field"><label for="compensationAmount">Rate / contract amount</label><input id="compensationAmount" name="compensation_amount" type="number" min="0.01" step="0.01" required></div>
+              <div class="finance-field"><label for="paymentFrequency">Payment frequency</label><select id="paymentFrequency" name="payment_frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="daily">Daily</option><option value="hourly">Hourly</option><option value="per_contract">Per contract</option></select></div>
+              <div class="finance-field"><label for="expectedPaymentDay">Expected payment day <span class="finance-caption">Optional</span></label><input id="expectedPaymentDay" name="expected_payment_day" type="number" min="1" max="31"></div>
+            </div>
+            <p class="finance-form-hint">PKR is the current default currency. Rate history is effective-dated; a new rate never overwrites an approved payroll snapshot.</p>
+            <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Save employee</button><span class="finance-caption" id="employeeFormHint"></span></div>
+          </form>
+        </article>
+        <aside>
+          <article class="finance-panel">
+            <div class="finance-panel-head"><div><span class="finance-panel-kicker">Salary advance</span><h2 style="margin-top:7px">Record an advance</h2><p>Paid advances enter the ledger and are allocated to future payroll in the same currency.</p></div></div>
+            <form class="finance-form" id="advanceForm">
+              <div class="finance-field"><label for="advanceEmployee">Employee</label><select id="advanceEmployee" name="employee_id" required></select></div>
+              <div class="finance-form-grid">
+                <div class="finance-field"><label for="advanceAmount">Amount</label><input id="advanceAmount" name="amount" type="number" min="0.01" step="0.01" required></div>
+                <div class="finance-field"><label for="advanceDate">Payment date</label><input id="advanceDate" name="payment_date" type="date" required></div>
+              </div>
+              <div class="finance-form-grid">
+                <div class="finance-field"><label for="advanceAccount">Account</label><select id="advanceAccount" name="account_id" required></select></div>
+                <div class="finance-field"><label for="advanceMethod">Method</label><select id="advanceMethod" name="payment_method"><option value="cash">Cash</option><option value="bank_transfer">Bank transfer</option><option value="cheque">Cheque</option><option value="card">Card</option><option value="other">Other</option></select></div>
+              </div>
+              <div class="finance-field"><label for="advanceReference">Reference <span class="finance-caption">Optional</span></label><input id="advanceReference" name="reference" maxlength="120"></div>
+              <button class="finance-button finance-button-primary" type="submit">Record advance</button>
+            </form>
+          </article>
+          <article class="finance-panel">
+            <div class="finance-panel-head"><div><span class="finance-panel-kicker">Unallocated advances</span><h2 style="margin-top:7px">Advance balance</h2></div></div>
+            <div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Employee</th><th class="numeric">Outstanding</th></tr></thead><tbody id="advanceRows"><tr><td colspan="2"><div class="finance-empty">Loading advances…</div></td></tr></tbody></table></div>
+          </article>
+        </aside>
+      </section>
+    </main>
+    <footer class="finance-footer">Payroll is a finance record only. Employee profiles do not create or alter login accounts.</footer>
+  </div>
+
+  <dialog class="finance-dialog" id="paymentDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2>Record payroll payment</h2><p>Post a partial or final payment to the shared ledger.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="paymentForm">
+        <div class="finance-field"><label for="payAmount">Amount</label><input id="payAmount" name="amount" type="number" min="0.01" step="0.01" required></div>
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="payDate">Payment date</label><input id="payDate" name="payment_date" type="date" required></div>
+          <div class="finance-field"><label for="payMethod">Method</label><select id="payMethod" name="payment_method"><option value="cash">Cash</option><option value="bank_transfer">Bank transfer</option><option value="cheque">Cheque</option><option value="card">Card</option><option value="other">Other</option></select></div>
+        </div>
+        <div class="finance-field"><label for="payAccount">Account</label><select id="payAccount" name="account_id" required></select></div>
+        <div class="finance-field"><label for="payReference">Reference <span class="finance-caption">Optional</span></label><input id="payReference" name="reference" maxlength="120"></div>
+        <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Save payment</button><button class="finance-button" type="button" data-close-dialog>Cancel</button></div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="finance-dialog" id="adjustmentDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2>Add payroll adjustment</h2><p>Adjustments are locked when the period is approved.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="adjustmentForm">
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="adjustmentType">Adjustment</label><select id="adjustmentType" name="adjustment_type"><option value="bonus">Bonus</option><option value="allowance">Allowance</option><option value="deduction">Deduction</option></select></div>
+          <div class="finance-field"><label for="adjustmentAmount">Amount</label><input id="adjustmentAmount" name="amount" type="number" min="0.01" step="0.01" required></div>
+        </div>
+        <div class="finance-field"><label for="adjustmentDescription">Reason / description</label><textarea id="adjustmentDescription" name="description" maxlength="500" required></textarea></div>
+        <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Add adjustment</button><button class="finance-button" type="button" data-close-dialog>Cancel</button></div>
+      </form>
+    </div>
+  </dialog>
+  <dialog class="finance-dialog" id="employeeDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2 id="editEmployeeHeading">Employee record</h2><p>Update employment details or add a new effective-dated pay rate.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="editEmployeeForm">
+        <input type="hidden" name="employee_id">
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="editEmploymentStatus">Employment status</label><select id="editEmploymentStatus" name="employment_status"><option value="active">Active</option><option value="on_leave">On leave</option><option value="left">Left</option><option value="inactive">Inactive</option></select></div>
+          <div class="finance-field"><label for="editLastWorkingDate">Last working date</label><input id="editLastWorkingDate" name="last_working_date" type="date"></div>
+          <div class="finance-field"><label for="editEmployeeNumber">Employee number</label><input id="editEmployeeNumber" name="employee_number" maxlength="50"></div>
+          <div class="finance-field"><label for="editJobTitle">Job title</label><input id="editJobTitle" name="job_title" maxlength="120"></div>
+          <div class="finance-field"><label for="editEmployeeBranch">Branch</label><select id="editEmployeeBranch" name="branch_id"></select></div>
+          <div class="finance-field"><label for="editEmployeeNotes">Notes</label><textarea id="editEmployeeNotes" name="notes" maxlength="2000" rows="2"></textarea></div>
+        </div>
+        <button class="finance-button finance-button-primary" type="submit">Save employee details</button>
+      </form>
+      <div style="margin:18px 0;border-top:1px solid var(--line)"></div>
+      <form class="finance-form" id="compensationForm">
+        <input type="hidden" name="employee_id">
+        <div><h3 style="margin:0 0 5px;font-size:.88rem">Add compensation rate</h3><p class="finance-form-hint">The previous rate is closed automatically; approved payroll snapshots stay unchanged.</p></div>
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="editPaymentBasis">Pay basis</label><select id="editPaymentBasis" name="payment_basis"><option value="monthly">Monthly</option><option value="daily">Daily</option><option value="hourly">Hourly</option><option value="contract">Per contract</option></select></div>
+          <div class="finance-field"><label for="editPaymentFrequency">Payment frequency</label><select id="editPaymentFrequency" name="payment_frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="daily">Daily</option><option value="hourly">Hourly</option><option value="per_contract">Per contract</option></select></div>
+          <div class="finance-field"><label for="editCompensationAmount">New rate</label><input id="editCompensationAmount" name="amount" type="number" min="0.01" step="0.01" required></div>
+          <div class="finance-field"><label for="editEffectiveFrom">Effective from</label><input id="editEffectiveFrom" name="effective_from" type="date" required></div>
+          <div class="finance-field"><label for="editExpectedPaymentDay">Expected payment day</label><input id="editExpectedPaymentDay" name="expected_payment_day" type="number" min="1" max="31"></div>
+        </div>
+        <button class="finance-button" type="submit">Add new rate</button>
+      </form>
+      <div class="finance-panel-head" style="margin:20px 0 8px"><div><h3 style="margin:0;font-size:.88rem">Rate history</h3></div></div>
+      <div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Effective</th><th>Rate</th><th>Basis</th><th>Frequency</th></tr></thead><tbody id="compensationRows"><tr><td colspan="4" class="finance-caption">Choose an employee.</td></tr></tbody></table></div>
+    </div>
+  </dialog>
+  <script src="/finance.js"></script>
+  <script src="/finance-payroll.js"></script>
+</body>
+</html>

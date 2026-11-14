@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Track school bills, recurring expenses, estimates, and payments.">
+  <title>Expenses — The Eye Finance</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/finance.css">
+</head>
+<body>
+  <div class="finance-shell">
+    <header class="finance-header">
+      <a class="finance-brand" href="/admin.html" aria-label="The Eye admin dashboard">
+        <span class="finance-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5h18M5.5 4.5h13A1.5 1.5 0 0 1 20 6v14H4V6a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h8m-8 4h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span class="finance-brand-name">The Eye</span><span class="finance-brand-divider" aria-hidden="true"></span><span class="finance-brand-section">Finance desk</span>
+      </a>
+      <div class="finance-header-actions">
+        <nav class="finance-nav" aria-label="Finance pages">
+          <a href="/finance-overview.html">Overview</a><a href="/finance-payroll.html">Payroll</a><a href="/finance-expenses.html" aria-current="page">Expenses</a>
+        </nav>
+        <a class="finance-button finance-button-small" href="/admin.html">&larr; Back to dashboard</a>
+        <button class="finance-icon-button" data-finance-theme type="button" aria-label="Switch theme" title="Switch theme"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </header>
+
+    <main class="finance-main">
+      <div id="financeAlert" class="finance-alert" role="status"></div>
+      <section class="finance-page-heading">
+        <div><p class="finance-kicker">Finance / School costs</p><h1>Every bill has a place.</h1><p>Separate planned estimates from approved obligations and actual cash payments.</p></div>
+        <div class="finance-heading-actions">
+          <label class="finance-field"><span class="finance-caption">Branch scope</span><select id="branchFilter" class="finance-control" aria-label="Branch scope"></select></label>
+          <label class="finance-field"><span class="finance-caption">Period</span><input id="expenseMonth" class="finance-control" type="month"></label>
+        </div>
+      </section>
+
+      <section class="finance-grid finance-grid-2">
+        <article class="finance-panel">
+          <div class="finance-panel-head"><div><span class="finance-panel-kicker">New obligation</span><h2 style="margin-top:7px">Record a bill</h2><p>One-time costs or the actual bill for a variable recurring expense.</p></div></div>
+          <form class="finance-form" id="obligationForm">
+            <div class="finance-form-grid">
+              <div class="finance-field"><label for="obligationType">Expense type</label><select id="obligationType" name="expense_type"><option value="one_time">One-time</option><option value="variable_recurring">Variable recurring bill</option></select></div>
+              <div class="finance-field"><label for="obligationCategory">Category</label><select id="obligationCategory" name="category_id" required></select></div>
+              <div class="finance-field finance-field-full"><label for="obligationName">Bill name</label><input id="obligationName" name="name" maxlength="160" required placeholder="e.g. Electricity bill"></div>
+              <div class="finance-field finance-hidden" id="billTemplateWrap"><label for="billTemplate">Recurring template <span class="finance-caption">Optional</span></label><select id="billTemplate" name="template_id"></select></div>
+              <div class="finance-field"><label for="billAmount">Actual bill amount</label><input id="billAmount" name="amount_due" type="number" min="0" step="0.01" required></div>
+              <div class="finance-field"><label for="billExpected">Expected amount <span class="finance-caption">Optional</span></label><input id="billExpected" name="expected_amount" type="number" min="0" step="0.01"></div>
+              <div class="finance-field"><label for="billPeriod">Bill period <span class="finance-caption">Required for variable bills</span></label><input id="billPeriod" name="period_start" type="date"></div>
+              <div class="finance-field"><label for="billDue">Due date</label><input id="billDue" name="due_date" type="date"></div>
+              <div class="finance-field"><label for="obligationBranch">Branch</label><select id="obligationBranch" name="branch_id"></select></div>
+              <div class="finance-field"><label for="billReceipt">Receipt / document reference <span class="finance-caption">Optional</span></label><input id="billReceipt" name="receipt_reference" maxlength="500"></div>
+              <div class="finance-field finance-field-full"><label for="billDescription">Notes</label><textarea id="billDescription" name="description" maxlength="2000" rows="2"></textarea></div>
+            </div>
+            <button class="finance-button finance-button-primary" type="submit">Save bill</button>
+          </form>
+        </article>
+
+        <article class="finance-panel">
+          <div class="finance-panel-head"><div><span class="finance-panel-kicker">Recurring plan</span><h2 style="margin-top:7px">Set up an expense schedule</h2><p>Fixed and scheduled items can generate obligations. Variable items create estimates until the real bill arrives.</p></div></div>
+          <form class="finance-form" id="templateForm">
+            <div class="finance-form-grid">
+              <div class="finance-field finance-field-full"><label for="templateName">Expense name</label><input id="templateName" name="name" maxlength="160" required placeholder="e.g. Monthly electricity"></div>
+              <div class="finance-field"><label for="templateCategory">Category</label><select id="templateCategory" name="category_id" required></select></div>
+              <div class="finance-field"><label for="templateType">Expense type</label><select id="templateType" name="expense_type"><option value="fixed_recurring">Fixed recurring</option><option value="variable_recurring">Variable recurring</option><option value="scheduled">Scheduled</option></select></div>
+              <div class="finance-field"><label for="templateFrequency">Frequency</label><select id="templateFrequency" name="frequency"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+              <div class="finance-field"><label for="templateExpected">Expected amount <span class="finance-caption">Required for fixed</span></label><input id="templateExpected" name="expected_amount" type="number" min="0" step="0.01"></div>
+              <div class="finance-field"><label for="templateDueDay">Due day of month</label><input id="templateDueDay" name="due_day" type="number" min="1" max="31" value="1" required></div>
+              <div class="finance-field"><label for="templateStart">Start date</label><input id="templateStart" name="start_date" type="date" required></div>
+              <div class="finance-field"><label for="templateEnd">End date <span class="finance-caption">Optional</span></label><input id="templateEnd" name="end_date" type="date"></div>
+              <div class="finance-field"><label for="templateBranch">Branch</label><select id="templateBranch" name="branch_id"></select></div>
+            </div>
+            <button class="finance-button finance-button-primary" type="submit">Save recurring plan</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="finance-panel">
+        <div class="finance-panel-head">
+          <div><span class="finance-panel-kicker">Scheduled obligations</span><h2 style="margin-top:7px">Bills due and paid</h2><p>Outstanding values subtract posted payments only; estimates are never counted as cash.</p></div>
+          <div class="finance-inline">
+            <label class="finance-field"><span class="finance-caption">Payment status</span><select id="statusFilter" class="finance-control"><option value="all">All statuses</option><option value="unpaid">Unpaid</option><option value="partially_paid">Partially paid</option><option value="paid">Paid</option></select></label>
+            <button class="finance-button" id="generateExpenses" type="button">Generate recurring bills</button>
+            <button class="finance-button" id="reloadExpenses" type="button">Reload</button>
+          </div>
+        </div>
+        <div class="finance-table-wrap">
+          <table class="finance-table">
+            <thead><tr><th>Due</th><th>Bill</th><th>Category</th><th class="numeric">Expected</th><th class="numeric">Amount due</th><th class="numeric">Paid</th><th class="numeric">Outstanding</th><th>Status</th><th></th></tr></thead>
+            <tbody id="obligationRows"><tr><td colspan="9"><div class="finance-empty">Loading bills…</div></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="finance-layout-main" style="margin-top:16px">
+        <article class="finance-panel">
+          <div class="finance-panel-head"><div><span class="finance-panel-kicker">Recurring schedules</span><h2 style="margin-top:7px">Active plans</h2><p>Deactivate a plan to stop future bill generation. Past bills remain unchanged.</p></div></div>
+          <div class="finance-table-wrap"><table class="finance-table"><thead><tr><th>Expense</th><th>Category</th><th>Type / frequency</th><th class="numeric">Expected</th><th>Due day</th><th>Status</th><th></th></tr></thead><tbody id="templateRows"><tr><td colspan="7"><div class="finance-empty">Loading schedules…</div></td></tr></tbody></table></div>
+        </article>
+        <aside>
+          <article class="finance-panel">
+            <div class="finance-panel-head"><div><span class="finance-panel-kicker">Planning estimate</span><h2 style="margin-top:7px">Forecast a variable bill</h2><p>Estimates stay separate from actual bills and cash.</p></div></div>
+            <form class="finance-form" id="estimateForm">
+              <div class="finance-field"><label for="estimateTemplate">Variable recurring expense</label><select id="estimateTemplate" name="template_id" required></select></div>
+              <div class="finance-field"><label for="estimatePeriod">Estimate month</label><input id="estimatePeriod" name="period_start" type="date" required></div>
+              <div class="finance-field"><label for="estimateAmount">Estimated amount</label><input id="estimateAmount" name="amount" type="number" min="0" step="0.01" required></div>
+              <div class="finance-field"><label for="estimateNotes">Notes <span class="finance-caption">Optional</span></label><textarea id="estimateNotes" name="notes" maxlength="500" rows="2"></textarea></div>
+              <button class="finance-button finance-button-primary" type="submit">Save estimate</button>
+            </form>
+          </article>
+          <article class="finance-panel">
+            <div class="finance-panel-head"><div><span class="finance-panel-kicker">Category list</span><h2 style="margin-top:7px">Add a category</h2></div></div>
+            <form class="finance-inline" id="categoryForm"><label class="finance-field" style="flex:1"><span class="finance-caption">Category name</span><input name="name" maxlength="100" required></label><button class="finance-button" type="submit">Add</button></form>
+          </article>
+        </aside>
+      </section>
+
+      <section class="finance-panel">
+        <div class="finance-panel-head">
+          <div><span class="finance-panel-kicker">History / forecast</span><h2 style="margin-top:7px">Actual variable bills vs estimate</h2><p>Compare submitted bill amounts with the estimate for one recurring expense.</p></div>
+          <div class="finance-heading-actions">
+            <label class="finance-field"><span class="finance-caption">Year</span><input id="analyticsYear" class="finance-control" type="number" min="2000" max="2100"></label>
+            <label class="finance-field"><span class="finance-caption">Expense</span><select id="analyticsTemplate" class="finance-control"></select></label>
+            <button class="finance-button" id="loadAnalytics" type="button">Show</button>
+          </div>
+        </div>
+        <div class="finance-key" style="margin-bottom:13px"><span><i style="--key-color:var(--brand)"></i>Actual bill</span><span><i style="--key-color:var(--gold)"></i>Estimate</span></div>
+        <div id="expenseChart" class="finance-chart"><div class="finance-empty">Choose a variable recurring expense to view its history.</div></div>
+        <div class="finance-inline" style="margin-top:14px"><span class="finance-caption" id="analyticsSummary"></span></div>
+      </section>
+    </main>
+    <footer class="finance-footer">Obligations and estimates do not change the cash balance. Only posted payments become ledger transactions.</footer>
+  </div>
+
+  <dialog class="finance-dialog" id="expensePaymentDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2>Record bill payment</h2><p>Payment is recorded once in the shared cash ledger.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="expensePaymentForm">
+        <div class="finance-field"><label for="expensePayAmount">Amount</label><input id="expensePayAmount" name="amount" type="number" min="0.01" step="0.01" required></div>
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="expensePayDate">Payment date</label><input id="expensePayDate" name="payment_date" type="date" required></div>
+          <div class="finance-field"><label for="expensePayMethod">Method</label><select id="expensePayMethod" name="payment_method"><option value="cash">Cash</option><option value="bank_transfer">Bank transfer</option><option value="cheque">Cheque</option><option value="card">Card</option><option value="other">Other</option></select></div>
+        </div>
+        <div class="finance-field"><label for="expensePayAccount">Account</label><select id="expensePayAccount" name="account_id" required></select></div>
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="expensePayReference">Reference <span class="finance-caption">Optional</span></label><input id="expensePayReference" name="reference" maxlength="120"></div>
+          <div class="finance-field"><label for="expensePayReceipt">Receipt reference <span class="finance-caption">Optional</span></label><input id="expensePayReceipt" name="receipt_reference" maxlength="500"></div>
+        </div>
+        <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Save payment</button><button class="finance-button" type="button" data-close-dialog>Cancel</button></div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="finance-dialog" id="editObligationDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2>Correct bill details</h2><p>Unpaid bills can be corrected; paid history is locked.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="editObligationForm">
+        <input type="hidden" name="obligation_id">
+        <div class="finance-form-grid">
+          <div class="finance-field"><label for="editBillAmount">Actual amount</label><input id="editBillAmount" name="amount_due" type="number" min="0" step="0.01" required></div>
+          <div class="finance-field"><label for="editBillExpected">Expected amount</label><input id="editBillExpected" name="expected_amount" type="number" min="0" step="0.01"></div>
+          <div class="finance-field"><label for="editBillDue">Due date</label><input id="editBillDue" name="due_date" type="date"></div>
+        </div>
+        <div class="finance-field"><label for="editBillNotes">Notes</label><textarea id="editBillNotes" name="description" maxlength="2000"></textarea></div>
+        <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Save correction</button><button class="finance-button" type="button" data-close-dialog>Cancel</button></div>
+      </form>
+    </div>
+  </dialog>
+  <script src="/finance.js"></script>
+  <script src="/finance-expenses.js"></script>
+</body>
+</html>

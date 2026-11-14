@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="School income, expenses, outstanding payments, and available balance.">
+  <title>Finance overview — The Eye</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/finance.css">
+</head>
+<body>
+  <div class="finance-shell">
+    <header class="finance-header">
+      <a class="finance-brand" href="/admin.html" aria-label="The Eye admin dashboard">
+        <span class="finance-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5h18M5.5 4.5h13A1.5 1.5 0 0 1 20 6v14H4V6a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h8m-8 4h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
+        <span class="finance-brand-name">The Eye</span>
+        <span class="finance-brand-divider" aria-hidden="true"></span>
+        <span class="finance-brand-section">Finance desk</span>
+      </a>
+      <div class="finance-header-actions">
+        <nav class="finance-nav" aria-label="Finance pages">
+          <a href="/finance-overview.html" aria-current="page">Overview</a>
+          <a href="/finance-payroll.html">Payroll</a>
+          <a href="/finance-expenses.html">Expenses</a>
+        </nav>
+        <a class="finance-button finance-button-small" href="/admin.html">&larr; Back to dashboard</a>
+        <button class="finance-icon-button" data-finance-theme type="button" aria-label="Switch theme" title="Switch theme">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="finance-main">
+      <div id="financeAlert" class="finance-alert" role="status"></div>
+      <section class="finance-page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="finance-kicker">Finance / Monthly close</p>
+          <h1 id="page-title">School funds, in balance.</h1>
+          <p>Actual cash movements and unpaid commitments, kept in separate columns.</p>
+        </div>
+        <div class="finance-heading-actions">
+          <label class="finance-field">
+            <span class="finance-caption">Reporting month</span>
+            <input id="monthFilter" class="finance-control" type="month" aria-label="Reporting month">
+          </label>
+          <label class="finance-field" id="branchFilterWrap">
+            <span class="finance-caption">Branch</span>
+            <select id="branchFilter" class="finance-control" aria-label="Filter by branch"></select>
+          </label>
+          <button class="finance-button" id="refreshButton" type="button">Refresh</button>
+        </div>
+      </section>
+
+      <section class="finance-grid finance-grid-4" aria-label="Monthly finance summary">
+        <article class="finance-stat finance-stat-income">
+          <p class="finance-stat-label">Total Income</p>
+          <p class="finance-stat-value" id="totalIncome">—</p>
+          <p class="finance-stat-note">Recorded receipts this month</p>
+        </article>
+        <article class="finance-stat finance-stat-expenses">
+          <p class="finance-stat-label">Total Expenses</p>
+          <p class="finance-stat-value" id="totalExpenses">—</p>
+          <p class="finance-stat-note">Payments made this month</p>
+        </article>
+        <article class="finance-stat finance-stat-pending">
+          <p class="finance-stat-label">Pending Payments</p>
+          <p class="finance-stat-value" id="pendingPayments">—</p>
+          <p class="finance-stat-note">Approved payroll and bills still due</p>
+        </article>
+        <article class="finance-stat finance-stat-balance">
+          <p class="finance-stat-label">Available Balance</p>
+          <p class="finance-stat-value" id="availableBalance">—</p>
+          <p class="finance-stat-note">Cash on hand after outstanding obligations</p>
+        </article>
+      </section>
+
+      <section class="finance-layout-main" style="margin-top:16px">
+        <div>
+          <article class="finance-panel">
+            <div class="finance-panel-head">
+              <div>
+                <span class="finance-panel-kicker">Cash position</span>
+                <h2 style="margin-top:7px">What is available to spend?</h2>
+                <p>Opening cash plus actual payments received or made. Pending bills are not cash movements.</p>
+              </div>
+              <span class="finance-pill finance-pill-good" id="cashStatus">Ledger total</span>
+            </div>
+            <div class="finance-grid finance-grid-2">
+              <div>
+                <p class="finance-stat-label">Opening cash</p>
+                <p class="finance-stat-value" id="openingCash">—</p>
+              </div>
+              <div>
+                <p class="finance-stat-label">Actual cash at month end</p>
+                <p class="finance-stat-value" id="actualCash">—</p>
+              </div>
+            </div>
+            <div class="finance-ledger-rail" aria-hidden="true">
+              <span id="incomeRail" class="rail-income"></span>
+              <span id="expensesRail" class="rail-expenses"></span>
+              <span id="pendingRail" class="rail-pending"></span>
+            </div>
+            <div class="finance-key" aria-label="Monthly amounts">
+              <span><i style="--key-color:var(--brand)"></i>Income</span>
+              <span><i style="--key-color:var(--red)"></i>Expenses paid</span>
+              <span><i style="--key-color:var(--gold)"></i>Still owed</span>
+            </div>
+          </article>
+
+          <article class="finance-panel">
+            <div class="finance-panel-head">
+              <div>
+                <span class="finance-panel-kicker">Ledger / Recent activity</span>
+                <h2 style="margin-top:7px">Latest cash movements</h2>
+              </div>
+              <span class="finance-caption">Up to 200 records</span>
+            </div>
+            <div class="finance-table-wrap">
+              <table class="finance-table">
+                <thead><tr><th>Date</th><th>Activity</th><th>Account</th><th class="numeric">Amount</th><th>Status</th><th></th></tr></thead>
+                <tbody id="transactionRows"><tr><td colspan="6" class="finance-loading">Loading ledger…</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <aside>
+          <article class="finance-panel">
+            <div class="finance-panel-head">
+              <div>
+                <span class="finance-panel-kicker">Manual receipt</span>
+                <h2 style="margin-top:7px">Record income</h2>
+                <p>Use for receipts not yet recorded in another module.</p>
+              </div>
+            </div>
+            <form class="finance-form" id="incomeForm">
+              <div class="finance-field">
+                <label for="incomeAmount">Amount</label>
+                <input id="incomeAmount" name="amount" type="number" min="0.01" step="0.01" required>
+              </div>
+              <div class="finance-form-grid">
+                <div class="finance-field">
+                  <label for="incomeDate">Received on</label>
+                  <input id="incomeDate" name="transaction_date" type="date" required>
+                </div>
+                <div class="finance-field">
+                  <label for="incomeMethod">Method</label>
+                  <select id="incomeMethod" name="payment_method" required>
+                    <option value="cash">Cash</option><option value="bank_transfer">Bank transfer</option>
+                    <option value="cheque">Cheque</option><option value="card">Card</option><option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="finance-field">
+                <label for="incomeAccount">Account</label>
+                <select id="incomeAccount" name="account_id" required></select>
+              </div>
+              <div class="finance-field" id="incomeBranchWrap">
+                <label for="incomeBranch">Branch</label>
+                <select id="incomeBranch" name="branch_id"></select>
+              </div>
+              <div class="finance-field">
+                <label for="incomeReference">Reference <span class="finance-caption">Optional</span></label>
+                <input id="incomeReference" name="reference" maxlength="120">
+              </div>
+              <div class="finance-field">
+                <label for="incomeMemo">Note <span class="finance-caption">Optional</span></label>
+                <textarea id="incomeMemo" name="memo" maxlength="500" rows="2"></textarea>
+              </div>
+              <button class="finance-button finance-button-primary" type="submit">Save income</button>
+            </form>
+          </article>
+          <article class="finance-panel">
+            <div class="finance-panel-head">
+              <div><span class="finance-panel-kicker">Cash / Bank</span><h2 style="margin-top:7px">Finance accounts</h2><p>Set an opening balance before recording transactions.</p></div>
+              <button class="finance-button finance-button-small" id="toggleAccountForm" type="button">Add account</button>
+            </div>
+            <div class="finance-table-wrap">
+              <table class="finance-table">
+                <thead><tr><th>Account</th><th class="numeric">Opening balance</th><th></th></tr></thead>
+                <tbody id="accountRows"><tr><td colspan="3"><div class="finance-empty">Loading accounts…</div></td></tr></tbody>
+              </table>
+            </div>
+            <form class="finance-form finance-hidden" id="accountForm" style="margin-top:15px;padding-top:15px;border-top:1px solid var(--line)">
+              <div class="finance-form-grid">
+                <div class="finance-field"><label for="accountName">Account name</label><input id="accountName" name="name" maxlength="100" required placeholder="e.g. Bank account"></div>
+                <div class="finance-field"><label for="accountOpening">Opening balance</label><input id="accountOpening" name="opening_balance" type="number" min="0" step="0.01" value="0" required></div>
+                <div class="finance-field"><label for="accountOpeningDate">Balance as of</label><input id="accountOpeningDate" name="opening_balance_date" type="date" required></div>
+                <div class="finance-field"><label for="accountBranch">Branch</label><select id="accountBranch" name="branch_id"></select></div>
+              </div>
+              <button class="finance-button finance-button-primary" type="submit">Create account</button>
+            </form>
+          </article>
+          <p class="finance-footer" style="text-align:left">Student fee records remain in the Fees module and are not imported as new income events. This prevents cumulative fee totals from being counted twice.</p>
+        </aside>
+      </section>
+    </main>
+    <footer class="finance-footer">The Eye Finance · Amounts are shown in the account currency · Access is limited to school administrators.</footer>
+  </div>
+
+  <dialog class="finance-dialog" id="reverseDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head">
+        <div><h2>Reverse this transaction?</h2><p>A reversal adds a new ledger entry; it does not erase history.</p></div>
+        <button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button>
+      </div>
+      <form class="finance-form" id="reverseForm">
+        <input type="hidden" name="transaction_id">
+        <div class="finance-field"><label for="reverseReason">Reason</label><textarea id="reverseReason" name="reason" maxlength="500" required></textarea></div>
+        <div class="finance-inline"><button class="finance-button finance-button-danger" type="submit">Create reversal</button><button class="finance-button" type="button" data-close-dialog>Keep transaction</button></div>
+      </form>
+    </div>
+  </dialog>
+  <dialog class="finance-dialog" id="openingBalanceDialog">
+    <div class="finance-dialog-inner">
+      <div class="finance-dialog-head"><div><h2>Set opening balance</h2><p>This can only be changed before the account has any ledger activity.</p></div><button class="finance-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <form class="finance-form" id="openingBalanceForm">
+        <input type="hidden" name="account_id">
+        <div class="finance-field"><label for="openingBalanceAmount">Opening balance</label><input id="openingBalanceAmount" name="opening_balance" type="number" min="0" step="0.01" required></div>
+        <div class="finance-field"><label for="openingBalanceDate">Balance as of</label><input id="openingBalanceDate" name="opening_balance_date" type="date" required></div>
+        <div class="finance-inline"><button class="finance-button finance-button-primary" type="submit">Save balance</button><button class="finance-button" type="button" data-close-dialog>Cancel</button></div>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="/finance.js"></script>
+  <script src="/finance-overview.js"></script>
+</body>
+</html>
