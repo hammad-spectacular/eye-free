@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('attendance-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fee Voucher Generator — The Eye</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #263348;
+      --bg-input: #0f172a;
+      --border: #334155;
+      --border-focus: #4f46e5;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-hover: #6366f1;
+      --success: #22c55e;
+      --success-bg: rgba(34, 197, 94, 0.1);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.08);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.08);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      --gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      --table-row-hover: rgba(79, 70, 229, 0.06);
+      --table-stripe: rgba(255, 255, 255, 0.02);
+      --badge-bg: rgba(79, 70, 229, 0.12);
+      --badge-text: #a5b4fc;
+    }
+
+    [data-theme="light"] {
+      --bg: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input: #f8fafc;
+      --border: #e2e8f0;
+      --border-focus: #4f46e5;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-hover: #4338ca;
+      --success: #16a34a;
+      --success-bg: rgba(34, 197, 94, 0.08);
+      --danger: #dc2626;
+      --danger-bg: rgba(239, 68, 68, 0.06);
+      --warning: #d97706;
+      --warning-bg: rgba(245, 158, 11, 0.06);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      --gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      --table-row-hover: rgba(79, 70, 229, 0.04);
+      --table-stripe: rgba(255, 255, 255, 0.015);
+      --badge-bg: rgba(79, 70, 229, 0.08);
+      --badge-text: #4f46e5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s ease, color 0.4s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      background: var(--gradient);
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; color: #fff; }
+    .brand-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.16);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem;
+    }
+    .brand h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+    .brand p { font-size: 0.72rem; opacity: 0.85; margin-top: 2px; }
+
+    .demo-pill {
+      background: rgba(250, 204, 21, 0.18);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      color: #fde68a;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s ease;
+    }
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.24); }
+
+    .tab-nav {
+      position: relative;
+      z-index: 20;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 79px;
+    }
+    .tab-nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding: 0 24px;
+    }
+    .tab-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0.7rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2.5px;
+      background: var(--primary);
+      transition: width 0.18s ease;
+    }
+    .tab-btn:hover { background: rgba(148, 163, 184, 0.12); color: var(--text); }
+    .tab-btn.active { color: var(--primary); }
+    .tab-btn.active::after { width: 100%; }
+
+    .page { max-width: 1240px; margin: 0 auto; padding: 1.5rem 24px 4rem; }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
+
+    .control-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Filter bar: the four filters share one row so their labels and
+       inputs line up exactly; the action button sits on its own row below. */
+    .control-bar--stack {
+      display: block;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      align-items: end;
+    }
+    .filter-grid > div { min-width: 0; }
+    /* Select and text input render a couple of pixels apart by default —
+       force one box size so all four controls sit on a single line. */
+    .filter-grid .form-input {
+      box-sizing: border-box;
+      height: 40px;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .filter-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 900px) {
+      .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .filter-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.55rem 0.7rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    textarea.form-input { resize: vertical; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      height: 42px;
+      padding: 0 1.15rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg-card-hover);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: filter 0.2s ease, transform 0.1s ease;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--gradient); border: none; color: #fff; }
+    .btn-danger { background: var(--danger); border: none; color: #fff; }
+    .btn-sm { height: auto; padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 7px; }
+
+    .table-wrap { overflow-x: auto; }
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    table.data th {
+      text-align: left;
+      padding: 0.7rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    table.data td {
+      padding: 0.7rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    table.data tbody tr:hover { background: var(--table-row-hover); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+    }
+    .badge-success { background: var(--success-bg); color: var(--success); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+    .empty {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+    .row > div { flex: 1 1 170px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .charges-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .charge-row { display: flex; gap: 0.5rem; align-items: center; }
+    .charge-row .form-input { flex: 1; }
+
+    /* Saved charge presets */
+    .preset-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .preset-row { display: flex; gap: 0.5rem; align-items: center; }
+    .preset-row .form-input { flex: 1; }
+    .preset-row .form-input[data-preset-amount] { flex: 0 0 120px; }
+    .preset-row .form-input[data-preset-class] { flex: 0 0 180px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .hint { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      padding: 0.8rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      max-width: min(560px, 92vw);
+    }
+    .toast.err { border-left-color: var(--danger); color: var(--danger); }
+    .toast.ok { border-left-color: var(--success); color: var(--success); }
+
+    /* ---------------- Print: challan (A4 landscape) ---------------- */
+
+    @media screen { .print-only { display: none !important; } }
+
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+
+      /* The screen wrapper adds vertical padding that would push the
+         195mm challan past one A4-landscape page. Strip it for print. */
+      .page {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .voucher-card {
+        background: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        width: 100% !important;
+        height: 195mm !important;
+        max-height: 195mm !important;
+        display: flex !important;
+        flex-direction: row !important;
+        overflow: visible !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        box-sizing: border-box !important;
+      }
+
+      .voucher-copy {
+        flex: 1 1 0% !important;
+        width: 33.33% !important;
+        max-width: 33.33% !important;
+        height: 195mm !important;
+        max-height: 195mm !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 3mm 4mm !important;
+        color: #000 !important;
+        position: relative !important;
+        line-height: 1.2 !important;
+      }
+
+      .logo-watermark {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 250px; height: 250px;
+        object-fit: contain;
+        opacity: 0.08 !important;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .voucher-content {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        height: auto !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #000 !important;
+      }
+
+      .challan-table { width: 100%; border-collapse: collapse; margin: 1mm 0; }
+      .challan-table th,
+      .challan-table td {
+        border: 0.5pt solid #000;
+        padding: 0.5mm 1.2mm;
+        font-size: 7.5pt;
+        line-height: 1.15;
+      }
+      .challan-table th {
+        background: #f1f5f9 !important;
+        text-align: center;
+        font-weight: 800;
+      }
+
+      .copy-header {
+        background: #000 !important;
+        color: #fff !important;
+        text-align: center;
+        padding: 0.7mm;
+        font-weight: 900;
+        font-size: 9pt;
+        text-transform: uppercase;
+        margin-bottom: 1.2mm;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.3mm 2mm;
+        font-size: 7pt;
+        line-height: 1.15;
+        margin: 1mm 0;
+      }
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 1mm;
+        border-bottom: 0.2pt solid #eee;
+        padding-bottom: 0.3mm;
+      }
+      .info-item strong { white-space: nowrap; }
+      .info-item span { text-align: right; }
+    }
+
+    /* ---------------- Print: receipt (A4 portrait) ---------------- */
+
+    @media print {
+      .receipt-container {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: white !important;
+        color: #1e3a8a !important;
+      }
+
+      .physical-receipt {
+        width: 100% !important;
+        height: 138mm !important;
+        max-height: 138mm !important;
+        padding: 6mm 8mm !important;
+        border: 2px solid #1e3a8a !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        position: relative !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+      }
+
+      .receipt-header-main { font-size: 1.7rem !important; margin-bottom: 2px !important; }
+      .campus-grid { margin-bottom: 4px !important; }
+      .campus-item { font-size: 0.75rem !important; padding: 2px 10px !important; margin: 0 !important; }
+      .contact-header-bar { font-size: 0.85rem !important; padding: 4px 15px !important; margin-bottom: 6px !important; }
+      .info-row { margin-bottom: 4px !important; font-size: 0.9rem !important; }
+      .particulars-table { margin: 4px 0 !important; }
+      .particulars-table th { font-size: 0.85rem !important; padding: 3px !important; }
+      .particulars-table td { padding: 2px 8px !important; font-size: 0.85rem !important; }
+      .calculation-box { width: 170px !important; margin-left: auto !important; }
+      .calc-label, .calc-value { padding: 2px 8px !important; font-size: 0.8rem !important; }
+      .signature-section { margin-top: 15px !important; }
+      .sig-item { font-size: 0.8rem !important; padding-top: 2px !important; }
+    }
+
+    @media (max-width: 768px) {
+      .receipt-container { overflow-x: auto; padding: 10px; }
+      .physical-receipt { min-width: 600px; transform-origin: top left; }
+    }
+
+    .physical-receipt {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1e3a8a;
+      padding: 1rem;
+      background: #fff;
+      position: relative;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    .receipt-header-main {
+      text-align: center; font-size: 2.2rem; font-weight: 900; color: #1e3a8a;
+      text-transform: uppercase; margin-bottom: 2px; letter-spacing: -1px;
+    }
+    .campus-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; position: relative; }
+    .campus-item {
+      border: 1.5px solid #ef4444; border-radius: 12px; padding: 5px 15px; text-align: center;
+      color: #ef4444; font-size: 0.85rem; font-weight: 800; line-height: 1.2;
+    }
+    .contact-header-bar {
+      background: #3730a3; color: white; border-radius: 25px; padding: 6px 25px; text-align: center;
+      font-weight: 600; font-size: 0.95rem; margin-bottom: 10px;
+    }
+    .info-row { display: flex; margin-bottom: 8px; border-bottom: 1.5px solid #3730a3; padding-bottom: 2px; }
+    .info-label { font-weight: 800; margin-right: 10px; white-space: nowrap; }
+    .info-value { flex: 1; font-weight: 600; }
+    .particulars-table { width: 100%; border-collapse: collapse; margin: 8px 0; border: 2px solid #3730a3; }
+    .particulars-table th { background: #f8fafc; border: 2px solid #3730a3; padding: 5px; text-align: center; font-weight: 900; font-size: 1.1rem; }
+    .particulars-table td { border: 1.5px solid #3730a3; padding: 4px 10px; font-weight: 700; }
+    .calculation-box { width: 200px; border: 2px solid #3730a3; margin-left: auto; }
+    .calc-row { display: flex; border-bottom: 1.5px solid #3730a3; }
+    .calc-row:last-child { border-bottom: none; }
+    .calc-label { flex: 1; padding: 5px 10px; font-weight: 800; border-right: 1.5px solid #3730a3; }
+    .calc-value { width: 100px; padding: 5px 10px; text-align: right; font-weight: 800; }
+    .calc-row.balance-row { background: #3730a3; color: white; }
+    .signature-section { display: flex; justify-content: space-between; margin-top: 20px; }
+    .sig-item { width: 40%; border-top: 1.5px solid #3730a3; text-align: center; padding-top: 5px; font-weight: 800; }
+
+    .receipt-container { max-width: 800px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<header class="header no-print">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-file-invoice"></i></div>
+      <div>
+        <h1>Fee Voucher Generator</h1>
+        <p>The Eye &mdash; fee challans, collection and receipts</p>
+      </div>
+      <span class="demo-pill">Standalone demo</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btnResetDemo" title="Clear the demo data and start again">
+        <i class="fa-solid fa-rotate-left"></i> Reset demo
+      </button>
+      <button class="icon-btn" id="btnTheme" title="Switch theme">
+        <i class="fa-solid fa-circle-half-stroke"></i> Theme
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav no-print">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" data-tab="generate"><i class="fa-solid fa-layer-group"></i> Generate Vouchers</button>
+    <button class="tab-btn" data-tab="collect"><i class="fa-solid fa-cash-register"></i> Collect Fee &amp; Receipt</button>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- ================= GENERATE ================= -->
+  <section id="tab-generate">
+    <div class="control-bar no-print control-bar--stack">
+      <div class="filter-grid">
+        <div>
+          <label class="form-label">Billing Month</label>
+          <select id="genMonth" class="form-input"></select>
+        </div>
+        <div>
+          <label class="form-label">Year</label>
+          <select id="genYear" class="form-input"></select>
+        </div>
+        <div>
+          <label class="form-label">Filter Class</label>
+          <select id="genClass" class="form-input"></select>
+        </div>
+        <div>
+          <label class="form-label">Search student</label>
+          <input type="text" id="genSearch" class="form-input" placeholder="Name, father name or admission no.">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" id="btnPrintBulk">
+          <i class="fa-solid fa-print"></i> Print Class <span id="countBulkNoun">Challans</span> (<span id="countBulk">0</span>)
+        </button>
+      </div>
+    </div>
+
+    <div class="panel no-print" id="brandingBar">
+      <div class="row" style="align-items: center;">
+        <div style="flex: 2 1 260px;">
+          <label class="form-label">School Name</label>
+          <input type="text" id="schoolName" class="form-input" placeholder="School name on the challan">
+        </div>
+        <div style="flex: 3 1 260px;">
+          <label class="form-label">Location / Contact</label>
+          <input type="text" id="schoolAddress" class="form-input" placeholder="Campus address and contact">
+        </div>
+        <div style="flex: 1 1 200px;">
+          <label class="form-label">Logo</label>
+          <input type="file" id="logoInput" accept="image/*" style="font-size: 0.8rem; width: 100%;">
+        </div>
+        <div style="flex: 0 0 auto; display: flex; gap: 0.5rem;">
+          <button class="btn btn-sm" id="btnRemoveLogo">Remove logo</button>
+          <button class="btn btn-sm" id="btnBulkCharge">+ Charge for all shown</button>
+          <button class="btn btn-sm" id="btnConfig"><i class="fa-solid fa-gear"></i> Challan Config</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top: 0.6rem;">
+        Branding is saved in this browser for the demo. When this is integrated it moves to the school record,
+        so every cashier prints the same challan.
+      </p>
+    </div>
+
+    <div class="panel no-print" id="bulkChargePanel" style="display: none;">
+      <div class="row">
+        <div style="flex: 2 1 220px;">
+          <label class="form-label">Saved charge</label>
+          <select id="bulkChargePreset" class="form-input"></select>
+        </div>
+        <div style="flex: 2 1 220px;">
+          <label class="form-label">Charge name</label>
+          <input type="text" id="bulkChargeLabel" class="form-input" list="commonCharges" placeholder="e.g. Examination Fee">
+        </div>
+        <div style="flex: 1 1 130px;">
+          <label class="form-label">Amount (Rs.)</label>
+          <input type="number" id="bulkChargeAmount" class="form-input" min="1" step="1">
+        </div>
+        <div style="flex: 1 1 170px;">
+          <label class="form-label">Applies to</label>
+          <select id="bulkChargeScope" class="form-input"></select>
+        </div>
+        <div style="flex: 0 0 auto;">
+          <button class="btn btn-primary" id="btnApplyBulkCharge">Add to <span id="bulkChargeCount">0</span> <span id="bulkChargeNoun">vouchers</span></button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top: 0.6rem;" id="bulkChargeHint"></p>
+      <datalist id="commonCharges"></datalist>
+    </div>
+
+    <div class="panel no-print" id="configPanel" style="display: none;">
+      <div class="grid-2">
+        <div>
+          <label class="form-label">Bank name</label>
+          <input type="text" id="bankName" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Bank branch / address</label>
+          <input type="text" id="bankBranch" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">A/C title</label>
+          <input type="text" id="bankAccountTitle" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Account number</label>
+          <input type="text" id="bankAccountNo" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Institute ID</label>
+          <input type="text" id="instituteId" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Due days</label>
+          <input type="number" id="dueDays" class="form-input" min="0" step="1">
+        </div>
+        <div>
+          <label class="form-label">Late fine (Rs.)</label>
+          <input type="number" id="lateFine" class="form-input" min="0" step="1">
+        </div>
+        <div>
+          <label class="form-label">Payment methods (one per line)</label>
+          <textarea id="paymentMethods" class="form-input" rows="3"></textarea>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <label class="form-label">Challan footer note</label>
+          <input type="text" id="challanNote" class="form-input">
+        </div>
+        <div style="grid-column: 1 / -1; margin-top: 0.5rem;">
+          <label class="form-label">Saved charges</label>
+          <p class="hint" style="margin-bottom: 0.6rem;">
+            Charges you can apply in one click. Set a class to keep one charge for that class only
+            (a bus fee for Nursery, say). Saved with the rest of the challan setup.
+          </p>
+          <div class="preset-list" id="presetList"></div>
+          <button class="btn btn-sm" id="btnAddPreset"><i class="fa-solid fa-plus"></i> Add a saved charge</button>
+          <input type="hidden" id="presetDraft" value="">
+        </div>
+      </div>
+      <div class="row" style="margin-top: 1rem; justify-content: flex-end;">
+        <button class="btn btn-primary" id="btnSaveSettings"><i class="fa-solid fa-floppy-disk"></i> Save settings</button>
+      </div>
+    </div>
+
+    <div class="panel table-wrap no-print" id="voucherPanel">
+      <table class="data">
+        <thead>
+          <tr>
+            <th style="width: 60px;">Sr No</th>
+            <th>Adm No</th>
+            <th>Student &amp; Father Name</th>
+            <th>Class</th>
+            <th>Month</th>
+            <th>Monthly Fee</th>
+            <th>Arrears</th>
+            <th>Total Pending</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="voucherRows"></tbody>
+      </table>
+      <div id="voucherEmpty" class="empty">No vouchers for this billing cycle yet.</div>
+    </div>
+
+    <div class="print-container print-only" id="printChallans"></div>
+  </section>
+
+  <!-- ================= COLLECT ================= -->
+  <section id="tab-collect" style="display: none;">
+    <div class="panel no-print">
+      <h2 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Fee Collection</h2>
+      <p class="hint" style="margin-bottom: 1rem;">
+        Scan or enter a voucher number, or type the student's name, father's name or admission number.
+      </p>
+      <form id="collectForm" class="row">
+        <div style="flex: 2 1 320px;">
+          <label class="form-label">Voucher no / student</label>
+          <input type="text" id="collectSearch" class="form-input" placeholder="e.g. 12, Ayesha, EYE-1001" autocomplete="off">
+        </div>
+        <div style="flex: 0 0 auto;">
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Find record</button>
+        </div>
+      </form>
+      <div id="collectSuggestions" style="margin-top: 0.75rem; display: none;"></div>
+    </div>
+
+    <div id="collectResult"></div>
+  </section>
+
+</main>
+
+<script src="./voucher-engine.js"></script>
+<script src="./voucher-demo-api.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const E = window.VGEngine;
+  const api = window.VGDemoApi;
+
+  const BRAND_KEY = 'theeye.vg.branding.v1';
+
+  const DEFAULTS = {
+    schoolName: 'THE EYE SCHOOL SYSTEM',
+    schoolAddress: 'Main Campus, Islamabad. Mob: 0300-1234567',
+    campusOne: 'MAIN CAMPUS',
+    campusTwo: 'SECONDARY CAMPUS',
+    bankName: 'Meezan Bank Limited',
+    bankBranch: 'Bank Road, Rawalpindi',
+    bankAccountTitle: 'THE EYE SCHOOL SYSTEM',
+    bankAccountNo: '0000-000000-0000',
+    instituteId: '2109',
+    paymentMethods: '1. CASH DEPOSIT AT ALL BRANCHES OF THE MENTIONED BANK.\n2. ONLINE VIA MOBILE BANKING OR ATM.',
+    challanNote: 'Fine is imposed to maintain discipline. Amount of fine is donated as charity.',
+    logo: '',
+    // Saved charges you can apply in one click. classId '' means every class.
+    chargePresets: [
+      { id: 'exam', label: 'Examination Fee', amount: 1500, classId: '' },
+      { id: 'admission', label: 'Admission Fee', amount: 5000, classId: '' },
+      { id: 'sports', label: 'Sports Fee', amount: 800, classId: '' },
+      { id: 'library', label: 'Library Fee', amount: 300, classId: '' },
+      { id: 'computer', label: 'Computer Fee', amount: 600, classId: '' },
+      { id: 'transport', label: 'Transport Fee', amount: 800, classId: '1' }
+    ]
+  };
+
+  // --- Small helpers -------------------------------------------------------
+
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  const money = (n) => `Rs. ${E.num(n).toLocaleString('en-US')}`;
+
+  /** "1 voucher" / "26 vouchers" — picks the right form for the number. */
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+  let toastTimer = null;
+  function toast(message, kind = '') {
+    document.querySelectorAll('.toast').forEach((t) => t.remove());
+    const el = document.createElement('div');
+    el.className = `toast no-print ${kind}`;
+    el.textContent = message;
+    document.body.appendChild(el);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.remove(), 4200);
+  }
+
+  // --- Branding (browser-stored, like the source project) ------------------
+
+  function loadBranding() {
+    try {
+      const raw = localStorage.getItem(BRAND_KEY);
+      if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+    } catch (err) { /* fall through to defaults */ }
+    return { ...DEFAULTS };
+  }
+
+  let branding = loadBranding();
+
+  function saveBranding() {
+    try { localStorage.setItem(BRAND_KEY, JSON.stringify(branding)); } catch (err) { /* ignore */ }
+  }
+
+  function bindBrand(id, key) {
+    const el = $(id);
+    el.value = branding[key] ?? '';
+    el.addEventListener('input', () => {
+      branding[key] = el.value;
+      saveBranding();
+    });
+  }
+
+  // --- Saved charges (presets) ---------------------------------------------
+
+  /** The saved charges, tidied: a name, an amount above zero, a class or none. */
+  function presets() {
+    const list = Array.isArray(branding.chargePresets) ? branding.chargePresets : [];
+    return list
+      .map((p, i) => ({
+        id: p?.id || `p${i}`,
+        label: String(p?.label ?? '').trim(),
+        amount: E.roundRupees(E.num(p?.amount)),
+        classId: p?.classId == null ? '' : String(p.classId)
+      }))
+      .filter((p) => p.label && p.amount > 0);
+  }
+
+  /** The name a class shows on screen, for the preset scope dropdown. */
+  function classNameOf(classId) {
+    const cls = api.classes().find((c) => String(c.id) === String(classId));
+    return cls ? E.classLabel(cls, cls.id) : '';
+  }
+
+  function savePresets(list) {
+    branding.chargePresets = list.map((p, i) => ({
+      id: p.id || `p${Date.now()}${i}`,
+      label: String(p.label ?? '').trim(),
+      amount: E.roundRupees(E.num(p.amount)),
+      classId: p.classId == null ? '' : String(p.classId)
+    }));
+    saveBranding();
+    renderPresetPicker();
+  }
+
+  /** The preset editor rows inside Challan Config. */
+  function renderPresetEditor() {
+    const list = $('presetList');
+    const classes = api.classes();
+    const draft = currentDraft();
+    list.innerHTML = draft.map((p, i) => `
+      <div class="preset-row">
+        <input type="text" class="form-input" data-preset-label="${i}" value="${escapeHtml(p.label ?? '')}" placeholder="Charge name">
+        <input type="number" class="form-input" data-preset-amount="${i}" value="${E.num(p.amount) || ''}" min="1" step="1">
+        <select class="form-input" data-preset-class="${i}">
+          <option value="">All classes</option>
+          ${classes.map((c) => `<option value="${c.id}" ${String(c.id) === String(p.classId ?? '') ? 'selected' : ''}>${escapeHtml(E.classLabel(c, c.id))}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-danger" data-remove-preset="${i}" title="Remove this saved charge"><i class="fa-solid fa-xmark"></i></button>
+      </div>`).join('');
+  }
+
+  /** The "Saved charge" dropdown on the bulk charge panel. */
+  function renderPresetPicker() {
+    const sel = $('bulkChargePreset');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Custom charge</option>'
+      + presets().map((p, i) => {
+        const scope = p.classId ? ` — ${classNameOf(p.classId)}` : '';
+        return `<option value="${i}">${escapeHtml(p.label)} (Rs. ${p.amount})${escapeHtml(scope)}</option>`;
+      }).join('');
+    if ([...sel.options].some((o) => o.value === current)) sel.value = current;
+
+    const dl = $('commonCharges');
+    if (dl) dl.innerHTML = presets().map((p) => `<option value="${escapeHtml(p.label)}"></option>`).join('');
+  }
+
+  /** The "Applies to" dropdown on the bulk charge panel. */
+  function renderScopeOptions(selected = '') {
+    const sel = $('bulkChargeScope');
+    if (!sel) return;
+    const classes = api.classes();
+    sel.innerHTML = '<option value="">All shown</option>'
+      + classes.map((c) => `<option value="${c.id}">${escapeHtml(E.classLabel(c, c.id))}</option>`).join('');
+    sel.value = classes.some((c) => String(c.id) === String(selected)) ? String(selected) : '';
+  }
+
+  // --- Page state ----------------------------------------------------------
+
+  const state = {
+    tab: 'generate',
+    month: E.MONTHS[new Date().getMonth()],
+    year: String(new Date().getFullYear()),
+    classId: 'all',
+    search: '',
+    vouchers: [],
+    printTargetId: null,
+    chargesFor: null,
+    feeSettings: api.settings(),
+    collect: { voucher: null, receipt: null, paidTuition: '', paidAC: '0', waiveFine: false, advance: false }
+  };
+
+  // --- Theme ---------------------------------------------------------------
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('attendance-theme', theme);
+  }
+  $('btnTheme').addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  // --- Print page setup ----------------------------------------------------
+
+  /** A4 landscape for the challan sheet, A4 portrait for the receipt. */
+  function setPrintPage(orientation, margin) {
+    const id = 'print-page-style';
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.innerHTML = `@media print { @page { size: A4 ${orientation} !important; margin: ${margin} !important; } }`;
+  }
+
+  // --- Filters -------------------------------------------------------------
+
+  function buildFilterOptions() {
+    const monthSel = $('genMonth');
+    monthSel.innerHTML = E.MONTHS.map((m) => `<option value="${m}">${m}</option>`).join('');
+    monthSel.value = state.month;
+
+    const yearSel = $('genYear');
+    yearSel.innerHTML = E.yearOptions().map((y) => `<option value="${y}">${y}</option>`).join('');
+    yearSel.value = state.year;
+
+    const classSel = $('genClass');
+    const classes = api.classes();
+    classSel.innerHTML = '<option value="all">All Classes</option>'
+      + classes.map((c) => {
+        const label = `${c.name}${c.section ? ' - ' + c.section : ''}`;
+        return `<option value="${c.id}">${escapeHtml(label)}</option>`;
+      }).join('');
+    classSel.value = state.classId;
+  }
+
+  function filteredVouchers() {
+    return state.vouchers.filter((f) => {
+      const matchesSearch = !state.search
+        || String(f.studentName ?? '').toLowerCase().includes(state.search.toLowerCase())
+        || String(f.fatherName ?? '').toLowerCase().includes(state.search.toLowerCase())
+        || String(f.admissionNumber ?? '').toLowerCase().includes(state.search.toLowerCase());
+      const cls = api.classes().find((c) => String(c.id) === String(f.classId));
+      const label = cls ? `${cls.name}${cls.section ? ' - ' + cls.section : ''}` : (f.className ?? '');
+      const matchesClass = state.classId === 'all' || String(label).trim() === String(state.classId).trim()
+        || String(f.classId) === String(state.classId);
+      return matchesSearch && matchesClass;
+    });
+  }
+
+  // --- Generate tab --------------------------------------------------------
+
+  /** The vouchers a bulk charge would land on: what is shown, limited by the scope. */
+  function bulkScopeTargets() {
+    const list = filteredVouchers();
+    const scope = $('bulkChargeScope')?.value ?? '';
+    if (!scope) return list;
+    return list.filter((v) => String(v.classId) === String(scope) || String(v.className ?? '') === scope);
+  }
+
+  /** Keeps the bulk charge button, its count and its hint in step with the list and the scope. */
+  function updateBulkChargeTargets() {
+    const btn = $('btnApplyBulkCharge');
+    if (!btn) return;
+    const shown = filteredVouchers().length;
+    const targets = bulkScopeTargets();
+    const n = targets.length;
+    const scope = $('bulkChargeScope')?.value ?? '';
+    const scopeName = scope ? classNameOf(scope) : '';
+
+    $('bulkChargeCount').textContent = n;
+    $('bulkChargeNoun').textContent = n === 1 ? 'voucher' : 'vouchers';
+    btn.disabled = n === 0;
+
+    const where = `${state.month} ${state.year}${state.classId !== 'all' ? ', ' + state.classId : ''}${state.search ? ', matching the search' : ''}`;
+    $('bulkChargeHint').textContent = n === 0
+      ? (shown === 0
+        ? 'No vouchers are shown, so there is nothing to add the charge to.'
+        : `None of the ${shown} vouchers shown (${where}) is in ${scopeName}, so there is nothing to add the charge to.`)
+      : `Goes on ${plural(n, 'voucher')}${scopeName ? ` in ${scopeName}` : ''} of the ${shown} shown (${where}). It is added to what each student owes and shows on the challan.`;
+  }
+
+  function loadVouchers() {
+    state.vouchers = api.listFees({ month: state.month, year: state.year });
+    renderVoucherTable();
+  }
+
+  function renderVoucherTable() {
+    const rows = $('voucherRows');
+    const list = filteredVouchers();
+    $('countBulk').textContent = list.length;
+    $('countBulkNoun').textContent = list.length === 1 ? 'Challan' : 'Challans';
+    updateBulkChargeTargets();
+
+    if (list.length === 0) {
+      rows.innerHTML = '';
+      $('voucherEmpty').style.display = 'block';
+      $('voucherEmpty').textContent = state.vouchers.length
+        ? 'No vouchers match your filters.'
+        : 'No vouchers generated for this billing cycle yet.';
+      return;
+    }
+    $('voucherEmpty').style.display = 'none';
+
+    rows.innerHTML = list.map((f, idx) => {
+      const badge = f.status === 'Paid' ? 'badge-success' : f.status === 'Partially Paid' ? 'badge-warning' : 'badge-danger';
+      const chargeNote = (f.charges ?? []).length
+        ? `<div style="font-size: 0.72rem; color: var(--text-muted);">incl. ${f.charges.map((c) => escapeHtml(c.label) + ' ' + c.amount).join(', ')}</div>`
+        : '';
+      return `<tr>
+        <td style="color: var(--text-muted);">#${idx + 1}</td>
+        <td style="font-weight: 700;">${escapeHtml(f.admissionNumber ?? 'N/A')}</td>
+        <td>
+          <div style="font-weight: 700;">${escapeHtml(f.studentName ?? '')}</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">S/O: ${escapeHtml(f.fatherName ?? '')}</div>
+        </td>
+        <td style="font-size: 0.82rem;">${escapeHtml(f.className ?? '')}</td>
+        <td>${escapeHtml(f.month)} ${escapeHtml(f.year)}</td>
+        <td>${money(f.amount)}${chargeNote}</td>
+        <td style="color: var(--text-muted);">${money(f.previousArrears ?? 0)}</td>
+        <td style="font-weight: 700; color: var(--danger);">${money(f.balanceDue ?? 0)}</td>
+        <td><span class="badge ${badge}">${escapeHtml(f.status)}</span></td>
+        <td>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-primary" data-action="print" data-id="${f.id}"><i class="fa-solid fa-print"></i> Print</button>
+            <button class="btn btn-sm" data-action="charges" data-id="${f.id}">Charges</button>
+            <button class="btn btn-sm btn-danger" data-action="reverse" data-id="${f.id}">Reverse</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderChallans() {
+    const target = state.printTargetId === -1
+      ? filteredVouchers()
+      : (state.printTargetId ? filteredVouchers().filter((f) => String(f.id) === String(state.printTargetId)) : []);
+
+    const logo = branding.logo ? `<img src="${branding.logo}" alt="Watermark" class="logo-watermark">` : '';
+
+    $('printChallans').innerHTML = target.map((f) => `
+      <div class="voucher-card">
+        ${['Bank Copy', 'Student Copy', 'Information'].map((section, sectionIdx) => `
+          <div class="voucher-copy" style="border-right: ${sectionIdx < 2 ? '1px solid #000' : 'none'};">
+            ${logo}
+            <div class="voucher-content">
+              ${sectionIdx < 2 ? `
+                <div class="copy-header">${section}</div>
+                <div style="text-align: center; margin-bottom: 1.2mm;">
+                  <h4 style="margin: 0; font-size: 9pt;">${escapeHtml(branding.bankName)}</h4>
+                  <p style="margin: 0; font-size: 6.5pt;">${escapeHtml(branding.bankBranch)}</p>
+                  <p style="margin: 0.4mm 0; font-size: 6.5pt; font-weight: 700;">( ${escapeHtml(branding.bankAccountNo)} )</p>
+                </div>
+                <div style="border: 1px solid #000; padding: 0.7mm; font-size: 7.5pt; margin-bottom: 1.2mm; text-align: center;">
+                  <strong>A/C Title: ${escapeHtml(branding.bankAccountTitle)}</strong>
+                </div>
+                <div class="info-grid">
+                  <div class="info-item"><strong>Document No</strong> <span>${f.id}</span></div>
+                  <div class="info-item"><strong>Date</strong> <span>${new Date().toLocaleDateString('en-GB')}</span></div>
+                  <div class="info-item"><strong>Student Name</strong> <span>${escapeHtml(f.studentName ?? '')}</span></div>
+                  <div class="info-item"><strong>Father Name</strong> <span>${escapeHtml(f.fatherName ?? '')}</span></div>
+                  <div class="info-item"><strong>Student ID</strong> <span>${escapeHtml(f.admissionNumber ?? 'N/A')}</span></div>
+                  <div class="info-item"><strong>Session</strong> <span>${escapeHtml(f.month)} ${escapeHtml(f.year)}</span></div>
+                  <div class="info-item"><strong>Program</strong> <span>${escapeHtml(f.className ?? '')}</span></div>
+                  <div class="info-item"><strong>Institute ID</strong> <span>${escapeHtml(branding.instituteId)}</span></div>
+                </div>
+                ${challanBillHtml(f)}
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto;">
+                  <div style="text-align: center; font-size: 6.5pt; width: 110px; border-top: 0.5pt solid #000; padding-top: 0.8mm;">Student Signature</div>
+                  <div style="text-align: center; font-size: 6.5pt; width: 110px; border-top: 0.5pt solid #000; padding-top: 0.8mm;">Cashier Stamp</div>
+                </div>
+              ` : `
+                <div class="copy-header">INFORMATION</div>
+                <div style="font-size: 8pt; white-space: pre-line; line-height: 1.4;">${escapeHtml(branding.paymentMethods)}</div>
+                <div style="margin-top: auto; border-top: 1pt solid #eee; padding-top: 3mm;">
+                  <div style="font-size: 8pt; font-weight: 700; margin-bottom: 2mm;">Important Notes:</div>
+                  <p style="font-size: 7pt; color: #444; margin: 0;">${escapeHtml(branding.challanNote)}</p>
+                </div>
+                <div style="text-align: center; margin-top: 5mm;">
+                  ${branding.logo ? `<img src="${branding.logo}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain; opacity: 0.8;">` : ''}
+                  <div style="font-size: 9pt; font-weight: 800; margin-top: 2mm;">${escapeHtml(branding.schoolName)}</div>
+                  <div style="font-size: 7pt;">${escapeHtml(branding.schoolAddress)}</div>
+                </div>
+              `}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  }
+
+  /** The amounts block of a printed challan, ported from the source project. */
+  function challanBillHtml(f) {
+    const n = (v) => E.num(v);
+    const fine = n(f.lateFine);
+    const paid = n(f.paidTuition);
+    const total = f.balanceDue != null
+      ? f.balanceDue
+      : Math.max(0, n(f.amount) + fine - paid) + n(f.previousArrears) + n(f.remainingAnnualCharges);
+    const settings = state.feeSettings;
+    const afterDue = fine === 0 && !f.fineWaived && settings.lateFine > 0 && n(f.amount) > paid ? total + settings.lateFine : null;
+    const dueDate = f.dueDate ? new Date(f.dueDate) : new Date();
+    if (!f.dueDate) dueDate.setDate(dueDate.getDate() + settings.dueDays);
+
+    const rows = [];
+    rows.push(`<tr><td>Monthly Tuition Fee</td><td style="text-align: right;">${E.tuitionOf(f)}</td></tr>`);
+    if (n(f.discount) > 0) rows.push(`<tr><td>Less: Discount</td><td style="text-align: right; color: red;">- ${f.discount}</td></tr>`);
+    for (const c of f.charges ?? []) rows.push(`<tr><td>${escapeHtml(c.label)}</td><td style="text-align: right;">${c.amount}</td></tr>`);
+    if (fine > 0) rows.push(`<tr><td>Late Fine</td><td style="text-align: right;">${fine}</td></tr>`);
+    if (paid > 0) rows.push(`<tr><td>Less: Already Paid</td><td style="text-align: right; color: red;">- ${paid}</td></tr>`);
+    if (n(f.previousArrears) > 0) rows.push(`<tr><td>Previous Arrears</td><td style="text-align: right;">${f.previousArrears}</td></tr>`);
+    if (n(f.remainingAnnualCharges) > 0) rows.push(`<tr><td>Annual Charges O/S</td><td style="text-align: right;">${f.remainingAnnualCharges}</td></tr>`);
+    rows.push(`<tr style="font-weight: 900; background: #f8fafc;"><td><strong>${afterDue !== null ? 'Total (Within Due Date)' : 'Total Payable'}</strong></td><td style="text-align: right;"><strong>PKR ${total.toLocaleString()}</strong></td></tr>`);
+    if (afterDue !== null) {
+      rows.push(`<tr style="font-weight: 900; background: #fff1f2; color: #e11d48;"><td><strong>Total (After Due Date)</strong></td><td style="text-align: right;"><strong>PKR ${afterDue.toLocaleString()}</strong></td></tr>`);
+    }
+
+    return `
+      <table class="challan-table">
+        <thead><tr><th>Particulars</th><th style="width: 30%;">Amount</th></tr></thead>
+        <tbody>${rows.join('')}</tbody>
+      </table>
+      <div style="font-size: 7pt; margin: 1.2mm 0;">
+        <strong>Amount in Words (PKR)</strong>
+        <div style="text-transform: uppercase; margin-top: 0.8mm; border-bottom: 0.5px solid #ccc; padding-bottom: 0.8mm;">${escapeHtml(E.numberToWords(total))}</div>
+      </div>
+      <div style="font-size: 10pt; font-weight: 900; margin: 2mm 0;">Due Date: ${dueDate.toLocaleDateString('en-GB')}</div>
+    `;
+  }
+
+  // --- Collect tab ---------------------------------------------------------
+
+  const tuitionDue = (v) => Math.max(0, (v.balanceDue ?? 0) - (v.remainingAnnualCharges ?? 0));
+
+  const pendingFine = (v) => (v.fineCharged ? 0 : v.lateFine ?? 0)
+    + (v.arrears ?? []).reduce((sum, line) => sum + (line.fine ?? 0), 0);
+
+  const appliedTo = (allocations) => (allocations ?? [])
+    .filter((a) => a.amount > 0)
+    .map((a) => `${E.periodLabel(a)} ${money(a.amount)}${a.created ? ' (advance)' : ''}`)
+    .join(' · ');
+
+  function searchVouchers(term) {
+    const all = api.listFees({});
+    const q = String(term ?? '').trim().toLowerCase();
+    if (!q) return [];
+    const exact = all.find((f) => String(f.id) === q);
+    if (exact) return [exact];
+    return all.filter((f) => [f.studentName, f.fatherName, f.admissionNumber, f.className]
+      .some((v) => String(v ?? '').toLowerCase().includes(q))).slice(0, 8);
+  }
+
+  function openVoucher(voucher) {
+    state.collect = {
+      voucher,
+      // Kept as it was when the voucher was opened, so the printed receipt shows what was
+      // owed then, not what this payment just cleared.
+      original: { ...voucher, paidEarlier: voucher.paidTuition ?? 0 },
+      receipt: null,
+      paidTuition: String(tuitionDue(voucher)),
+      paidAC: String(voucher.remainingAnnualCharges || 0),
+      waiveFine: false,
+      advance: false
+    };
+    renderCollect();
+  }
+
+  function renderCollect() {
+    const box = $('collectResult');
+    const c = state.collect;
+    if (!c.voucher) { box.innerHTML = ''; return; }
+
+    const f = c.voucher;
+    // The particulars are printed from the voucher as it was when it was opened.
+    const source = c.original ?? f;
+    const receipt = c.receipt;
+    const paidEarlier = source.paidEarlier ?? 0;
+    const tuition = tuitionDue(source);
+    const pending = pendingFine(source);
+
+    const received = receipt ? receipt.amount : (E.num(c.paidTuition) + E.num(c.paidAC));
+    const owedNow = (f.balanceDue ?? 0) - (c.waiveFine && !receipt ? pending : 0);
+    const ahead = receipt
+      ? (receipt.allocations ?? []).filter((a) => E.periodOf(a) > E.periodOf(f)).reduce((s, a) => s + a.amount, 0)
+      : Math.max(0, received - owedNow);
+    const payable = receipt ? owedNow + received - ahead : owedNow;
+
+    const lines = [];
+    lines.push({ label: `Tuition Fee (Month: ${escapeHtml(source.month)})`, amount: E.tuitionOf(source) });
+    if ((source.discount ?? 0) > 0) lines.push({ label: 'Scholarship / Discount', amount: `- ${source.discount}`, style: 'color: var(--success)' });
+    for (const ch of source.charges ?? []) lines.push({ label: escapeHtml(ch.label), amount: ch.amount });
+    if (paidEarlier > 0) lines.push({ label: 'Less: Paid Earlier on This Voucher', amount: `- ${paidEarlier}`, style: 'color: var(--success)', plain: true });
+    lines.push({
+      label: `Previous Balance / Arrears${(source.arrears ?? []).length ? ` (${source.arrears.map((l) => E.periodLabel(l)).join(', ')})` : ''}`,
+      amount: source.previousArrears || 0
+    });
+    lines.push({
+      label: 'Annual Charges (AC) Pending',
+      amount: source.remainingAnnualCharges || 0,
+      amountStyle: (source.remainingAnnualCharges ?? 0) > 0 ? 'color: var(--danger)' : ''
+    });
+    lines.push({ label: `Late Fine${source.fineWaived ? ' (waived)' : ''}`, amount: source.lateFine || 0 });
+
+    let no = 0;
+    const particulars = lines.map((line) => {
+      if (line.plain) {
+        return `<tr><td style="${line.style ?? ''}">${line.label}</td><td style="text-align: right; ${line.style ?? ''}">${line.amount}</td></tr>`;
+      }
+      no += 1;
+      return `<tr><td style="${line.style ?? ''}">${no}. ${line.label}</td><td style="text-align: right; ${line.style ?? ''} ${line.amountStyle ?? ''}">${line.amount}</td></tr>`;
+    }).join('');
+
+    const logo = branding.logo ? `<img src="${branding.logo}" alt="Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; opacity: 0.08; z-index: 0; pointer-events: none;">` : '';
+
+    const receiptStatus = receipt
+      ? `<p style="color: var(--success); font-weight: bold;">✓ Receipt #${receipt.id} issued by ${escapeHtml(receipt.receivedByName ?? receipt.receivedBy)} (voucher #${f.id})</p>`
+      : (f.status === 'Paid' || f.status === 'Partially Paid'
+        ? `<p style="color: var(--success); font-weight: bold;">✓ Payment recorded${f.paymentDate ? ` on ${new Date(f.paymentDate).toLocaleDateString()}` : ''}</p>`
+        : '');
+
+    box.innerHTML = `
+      <div class="receipt-container">
+        <div class="physical-receipt">
+          ${logo}
+          <div class="receipt-header-main">${escapeHtml(branding.schoolName)}</div>
+          <div class="campus-grid">
+            <div class="campus-item">${escapeHtml(branding.campusOne)}</div>
+            <div class="campus-item">${escapeHtml(branding.campusTwo)}</div>
+          </div>
+          <div class="contact-header-bar">${escapeHtml(branding.schoolAddress)}</div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="font-weight: 800;">Dated:</span>
+              <span style="border-bottom: 1px solid #1e3a8a; min-width: 150px; font-weight: 600;">${new Date().toLocaleDateString()}</span>
+            </div>
+            <div style="text-align: center;">
+              <span style="background: #3730a3; color: white; padding: 2px 15px; border-radius: 4px; font-weight: 900; font-size: 0.8rem;">OFFICIAL RECEIPT</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="font-weight: 800;">${receipt ? 'Receipt No.' : 'Voucher No.'}</span>
+              <span style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px;">${receipt ? receipt.id : f.id}</span>
+            </div>
+          </div>
+
+          <div class="info-row"><span class="info-label">Name</span><span class="info-value">${escapeHtml(f.studentName ?? '')}</span></div>
+          <div style="display: flex; gap: 20px;">
+            <div class="info-row" style="flex: 2;"><span class="info-label">S/O</span><span class="info-value">${escapeHtml(f.fatherName ?? '')}</span></div>
+            <div class="info-row" style="flex: 1;"><span class="info-label">Class</span><span class="info-value">${escapeHtml(f.className ?? '')}</span></div>
+          </div>
+
+          <table class="particulars-table">
+            <thead><tr><th style="width: 70%;">PARTICULAR</th><th>AMOUNT</th></tr></thead>
+            <tbody>${particulars}</tbody>
+          </table>
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+              <div class="signature-section" style="margin-top: 20px;">
+                <div class="sig-item">Accountant</div>
+                <div class="sig-item">Sig./Stamp</div>
+              </div>
+              <div class="no-print" style="margin-top: 30px; text-align: center;">
+                ${receiptStatus}
+                <button class="btn btn-sm" id="btnPrintReceipt"><i class="fa-solid fa-print"></i> Print receipt</button>
+              </div>
+            </div>
+            <div class="calculation-box">
+              <div class="calc-row"><div class="calc-label">Total Payable</div><div class="calc-value">${payable}</div></div>
+              <div class="calc-row"><div class="calc-label">${receipt ? 'Received' : 'Receiving'}</div><div class="calc-value">${received}</div></div>
+              ${ahead > 0 ? `<div class="calc-row"><div class="calc-label">Advance (coming months)</div><div class="calc-value">${ahead}</div></div>` : ''}
+              <div class="calc-row balance-row"><div class="calc-label">Pending / Bal.</div><div class="calc-value">${Math.max(0, payable - received + ahead)}</div></div>
+            </div>
+          </div>
+
+          ${(f.arrears ?? []).length ? `<p style="font-size: 0.85rem; margin-top: 1rem;"><strong>Applied to: </strong>${escapeHtml(appliedTo(f.allocations))}</p>` : ''}
+          ${receipt && (receipt.allocations ?? []).length ? `<p style="font-size: 0.85rem; margin-top: 1rem;"><strong>Applied to: </strong>${escapeHtml(appliedTo(receipt.allocations))}${receipt.allocations.some((a) => a.fineWaived) ? ' · late fine waived' : ''}</p>` : ''}
+
+          <div class="no-print" style="margin-top: 1.5rem;">
+            ${!receipt && (f.balanceDue ?? 0) > 0 ? `
+              ${(f.arrears ?? []).length ? `<p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Earlier months still owing (cleared first): ${f.arrears.map((l) => `${E.periodLabel(l)} ${money(l.amount)}${l.fine ? ` incl. ${money(l.fine)} fine` : ''}`).join(' · ')}</p>` : ''}
+              ${pending > 0 ? `<label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; color: var(--danger); font-weight: 600;">
+                <input type="checkbox" id="chkWaiveFine" ${c.waiveFine ? 'checked' : ''}> Waive late fine of ${money(pending)}
+              </label>` : ''}
+              ${E.num(c.paidTuition) - Math.max(0, tuition - (c.waiveFine ? pending : 0)) > 0 ? `<label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-weight: 600;">
+                <input type="checkbox" id="chkAdvance" ${c.advance ? 'checked' : ''}> Advance fee: keep the extra ${money(E.num(c.paidTuition) - Math.max(0, tuition - (c.waiveFine ? pending : 0)))} for the coming months
+              </label>` : ''}
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <label class="form-label">Receive Tuition &amp; Charges</label>
+                  <input type="number" id="paidTuition" class="form-input" value="${escapeHtml(c.paidTuition)}">
+                </div>
+                <div>
+                  <label class="form-label">Receive AC/Misc</label>
+                  <input type="number" id="paidAC" class="form-input" value="${escapeHtml(c.paidAC)}">
+                </div>
+              </div>
+              <button class="btn btn-primary" id="btnPay" style="width: 100%;"><i class="fa-solid fa-check"></i> Confirm &amp; save payment</button>
+            ` : ''}
+            ${!receipt && (f.balanceDue ?? 0) <= 0 ? `<p class="hint">Nothing is pending on this voucher.</p>` : ''}
+            ${receipt ? `<p class="hint">Payment saved. Reload the generate tab to see the updated status.</p>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wire the controls that were just rendered.
+    const chkWaive = $('chkWaiveFine');
+    if (chkWaive) {
+      chkWaive.addEventListener('change', () => {
+        state.collect.waiveFine = chkWaive.checked;
+        const tuition = tuitionDue(f);
+        state.collect.paidTuition = String(Math.max(0, tuition - (state.collect.waiveFine ? pending : 0)));
+        renderCollect();
+      });
+    }
+    const chkAdvance = $('chkAdvance');
+    if (chkAdvance) {
+      chkAdvance.addEventListener('change', () => {
+        state.collect.advance = chkAdvance.checked;
+        renderCollect();
+      });
+    }
+    const tuitionInput = $('paidTuition');
+    if (tuitionInput) {
+      tuitionInput.addEventListener('input', () => {
+        state.collect.paidTuition = tuitionInput.value;
+        renderCollect();
+      });
+      tuitionInput.addEventListener('blur', () => renderCollect());
+    }
+    const acInput = $('paidAC');
+    if (acInput) {
+      acInput.addEventListener('input', () => { state.collect.paidAC = acInput.value; });
+    }
+    const payBtn = $('btnPay');
+    if (payBtn) payBtn.addEventListener('click', takePayment);
+    const printBtn = $('btnPrintReceipt');
+    if (printBtn) printBtn.addEventListener('click', printReceipt);
+  }
+
+  function takePayment() {
+    const c = state.collect;
+    if (!c.voucher) return;
+    try {
+      const result = api.receivePayment(c.voucher.id, {
+        paidTuition: E.num(c.paidTuition),
+        paidAC: E.num(c.paidAC),
+        waiveFine: c.waiveFine,
+        advance: c.advance
+      });
+      if (!result) { toast('That voucher could not be found.', 'err'); return; }
+      state.collect.receipt = result.receipt;
+      state.collect.voucher = api.listFees({}).find((v) => String(v.id) === String(result.voucher.id)) ?? result.voucher;
+      toast(`Receipt #${result.receipt.id} saved for ${result.voucher.studentName}.`, 'ok');
+      renderCollect();
+      loadVouchers();
+    } catch (err) {
+      toast(err.message || 'The payment could not be saved.', 'err');
+    }
+  }
+
+  function printReceipt() {
+    setPrintPage('portrait', '8mm');
+    window.print();
+  }
+
+  // --- Events --------------------------------------------------------------
+
+  $('genMonth').addEventListener('change', (e) => { state.month = e.target.value; loadVouchers(); });
+  $('genYear').addEventListener('change', (e) => { state.year = e.target.value; loadVouchers(); });
+  $('genClass').addEventListener('change', (e) => { state.classId = e.target.value; renderVoucherTable(); });
+  $('genSearch').addEventListener('input', (e) => { state.search = e.target.value; renderVoucherTable(); });
+
+  $('voucherRows').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'print') {
+      state.printTargetId = id;
+      setPrintPage('landscape', '5mm');
+      renderChallans();
+      setTimeout(() => window.print(), 120);
+      return;
+    }
+    if (action === 'charges') {
+      state.chargesFor = state.vouchers.find((v) => String(v.id) === String(id));
+      renderChargesModal();
+      return;
+    }
+    if (action === 'reverse') {
+      const voucher = state.vouchers.find((v) => String(v.id) === String(id));
+      if (!voucher) return;
+      if (!confirm(`Are you sure you want to REVERSE voucher #${voucher.id} for ${voucher.studentName}? This will undo any payment.`)) return;
+      try {
+        const res = api.reverseVoucher(id);
+        toast(res ? `Voucher #${id} reversed (${money(res.takenBack)} taken back).` : 'Nothing to reverse.', res ? 'ok' : '');
+        loadVouchers();
+      } catch (err) {
+        toast(err.message || 'The voucher could not be reversed.', 'err');
+      }
+    }
+  });
+
+  $('btnPrintBulk').addEventListener('click', () => {
+    const list = filteredVouchers();
+    if (list.length === 0) {
+      if (!confirm(`No vouchers found for ${state.month} ${state.year}. Generate them now?`)) return;
+      const res = api.generateFees({ month: state.month, year: state.year, classId: state.classId });
+      toast(`${plural(res.count, 'voucher')} generated for ${state.month} ${state.year}.`, 'ok');
+      loadVouchers();
+      list.push(...filteredVouchers());
+      if (list.length === 0) return;
+    }
+    state.printTargetId = -1;
+    setPrintPage('landscape', '5mm');
+    renderChallans();
+    setTimeout(() => window.print(), 150);
+  });
+
+  $('btnBulkCharge').addEventListener('click', () => {
+    const panel = $('bulkChargePanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') updateBulkChargeTargets();
+  });
+
+  // Picking a saved charge fills the name, the amount and the class it is for.
+  $('bulkChargePreset').addEventListener('change', (e) => {
+    const p = presets()[Number(e.target.value)];
+    if (!p) return;
+    $('bulkChargeLabel').value = p.label;
+    $('bulkChargeAmount').value = p.amount;
+    renderScopeOptions(p.classId);
+    updateBulkChargeTargets();
+  });
+
+  // Typing your own name means this is no longer the saved charge.
+  for (const id of ['bulkChargeLabel', 'bulkChargeAmount']) {
+    $(id).addEventListener('input', () => {
+      const sel = $('bulkChargePreset');
+      const p = presets()[Number(sel.value)];
+      if (p && ($('bulkChargeLabel').value !== p.label || Number($('bulkChargeAmount').value) !== p.amount)) {
+        sel.value = '';
+      }
+    });
+  }
+
+  $('bulkChargeScope').addEventListener('change', updateBulkChargeTargets);
+
+  $('btnApplyBulkCharge').addEventListener('click', () => {
+    const label = $('bulkChargeLabel').value.trim();
+    const amount = parseFloat($('bulkChargeAmount').value);
+    if (!label) { toast('Give the charge a name.', 'err'); return; }
+    if (!(amount > 0)) { toast('Enter an amount above zero.', 'err'); return; }
+    const ids = bulkScopeTargets().map((v) => v.id);
+    if (ids.length === 0) { toast('There are no vouchers in the list.', 'err'); return; }
+    try {
+      const res = api.addCharge(ids, { label, amount });
+      toast(`${label} added to ${plural(res.added, 'voucher')}.${res.skipped ? ` ${plural(res.skipped, 'voucher')} skipped (already had it).` : ''}`, 'ok');
+      $('bulkChargeLabel').value = '';
+      $('bulkChargeAmount').value = '';
+      $('bulkChargePreset').value = '';
+      loadVouchers();
+    } catch (err) {
+      toast(err.message || 'The charge could not be added.', 'err');
+    }
+  });
+
+  $('btnConfig').addEventListener('click', () => {
+    const panel = $('configPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') renderPresetEditor();
+  });
+
+  // --- Saved charge editor --------------------------------------------------
+
+  $('btnAddPreset').addEventListener('click', () => {
+    const list = presets();
+    list.push({ id: `p${Date.now()}`, label: '', amount: 0, classId: '' });
+    // Keep the editor rows as the working copy until it is saved.
+    $('presetDraft').value = JSON.stringify(list);
+    renderPresetEditor();
+    const rows = $('presetList').querySelectorAll('[data-preset-label]');
+    rows[rows.length - 1]?.focus();
+  });
+
+  $('presetList').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove-preset]');
+    if (!btn) return;
+    const i = Number(btn.dataset.removePreset);
+    const draft = readPresetDraft();
+    draft.splice(i, 1);
+    $('presetDraft').value = JSON.stringify(draft);
+    renderPresetEditor();
+  });
+
+  /** The editor rows, read back into a preset list. */
+  function currentDraft() {
+    const raw = $('presetDraft')?.value;
+    if (raw) {
+      try { return JSON.parse(raw); } catch (err) { /* fall through */ }
+    }
+    return presets();
+  }
+
+  /** The editor rows, read back into a preset list. */
+  function readPresetDraft() {
+    const draft = currentDraft();
+    const rows = [...$('presetList').querySelectorAll('.preset-row')];
+    return rows.map((row, i) => {
+      const label = row.querySelector('[data-preset-label]').value.trim();
+      const amount = E.roundRupees(E.num(row.querySelector('[data-preset-amount]').value));
+      const classId = row.querySelector('[data-preset-class]').value;
+      const old = draft[i] ?? {};
+      return { id: old.id || `p${i}`, label, amount, classId };
+    });
+  }
+
+  $('btnSaveSettings').addEventListener('click', () => {
+    state.feeSettings = api.saveSettings({
+      dueDays: $('dueDays').value,
+      lateFine: $('lateFine').value
+    });
+    $('dueDays').value = state.feeSettings.dueDays;
+    $('lateFine').value = state.feeSettings.lateFine;
+
+    // Save the saved charges too, dropping any that are not filled in.
+    const draft = readPresetDraft();
+    const kept = draft.filter((p) => p.label && p.amount > 0);
+    const dropped = draft.length - kept.length;
+    savePresets(kept);
+    $('presetDraft').value = JSON.stringify(kept);
+    renderPresetEditor();
+
+    toast(`Fee settings saved.${dropped ? ` ${plural(dropped, 'saved charge')} left out for having no name or amount.` : ''}`, 'ok');
+    loadVouchers();
+  });
+
+  $('logoInput').addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const data = String(ev.target.result);
+      if (data.length > 2 * 1024 * 1024) {
+        toast('Image too large for local storage! Please select a smaller logo (under 2MB).', 'err');
+        return;
+      }
+      branding.logo = data;
+      saveBranding();
+      toast('Logo saved.', 'ok');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $('btnRemoveLogo').addEventListener('click', () => {
+    branding.logo = '';
+    saveBranding();
+    toast('Logo removed.');
+  });
+
+  $('btnResetDemo').addEventListener('click', () => {
+    if (!confirm('Clear every demo voucher, receipt and payment, and start again?')) return;
+    api.hardReset();
+    state.collect = { voucher: null, receipt: null, paidTuition: '', paidAC: '0', waiveFine: false, advance: false };
+    renderCollect();
+    loadVouchers();
+    toast('Demo data reset.', 'ok');
+  });
+
+  // Charges modal
+  function renderChargesModal() {
+    const existing = document.getElementById('chargesModal');
+    if (existing) existing.remove();
+    const voucher = state.chargesFor;
+    if (!voucher) return;
+
+    const charges = voucher.charges ?? [];
+    const rows = charges.map((c, i) => `
+      <div class="charge-row">
+        <input type="text" class="form-input" data-charge-label="${i}" value="${escapeHtml(c.label)}" placeholder="Charge name">
+        <input type="number" class="form-input" data-charge-amount="${i}" value="${c.amount}" min="1" step="1" style="max-width: 120px;">
+        <button class="btn btn-sm btn-danger" data-remove-charge="${i}"><i class="fa-solid fa-xmark"></i></button>
+      </div>`).join('');
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop no-print';
+    modal.id = 'chargesModal';
+    const presetOptions = presets().map((p, i) => `<option value="${i}">${escapeHtml(p.label)} (Rs. ${p.amount})</option>`).join('');
+    modal.innerHTML = `
+      <div class="modal">
+        <h2 style="margin-bottom: 0.25rem; font-size: 1.05rem;">Charges on voucher #${voucher.id}</h2>
+        <p class="hint" style="margin-bottom: 1rem;">${escapeHtml(voucher.studentName ?? '')}, ${escapeHtml(voucher.month)} ${escapeHtml(voucher.year)}. Added on top of the monthly fee (admission fee, exam fee...).</p>
+        ${presets().length ? `
+        <div style="margin-bottom: 0.75rem;">
+          <label class="form-label">Add a saved charge</label>
+          <select id="chargePresetPick" class="form-input">
+            <option value="">Pick a saved charge...</option>
+            ${presetOptions}
+          </select>
+        </div>` : ''}
+        <div class="charges-list" id="chargeRows">${rows}</div>
+        <button class="btn btn-sm" id="btnAddChargeRow" style="margin-bottom: 1rem;"><i class="fa-solid fa-plus"></i> Add a charge</button>
+        <div class="row" style="justify-content: flex-end;">
+          <button class="btn" id="btnCancelCharges">Cancel</button>
+          <button class="btn btn-primary" id="btnSaveCharges">Save charges</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    const collectCharges = () => {
+      const out = [];
+      modal.querySelectorAll('[data-charge-label]').forEach((labelEl) => {
+        const i = labelEl.dataset.chargeLabel;
+        const amountEl = modal.querySelector(`[data-charge-amount="${i}"]`);
+        const label = labelEl.value.trim();
+        const amount = parseFloat(amountEl.value) || 0;
+        // A row that was opened but never filled in is simply ignored.
+        if (!label && !amount) return;
+        out.push({ label, amount });
+      });
+      return out;
+    };
+
+    /** Adds a charge row, optionally pre-filled from a saved charge. */
+    const addChargeRow = (label = '', amount = '') => {
+      const list = modal.querySelector('#chargeRows');
+      const i = list.querySelectorAll('[data-charge-label]').length;
+      const row = document.createElement('div');
+      row.className = 'charge-row';
+      row.innerHTML = `
+        <input type="text" class="form-input" data-charge-label="${i}" value="${escapeHtml(label)}" placeholder="Charge name">
+        <input type="number" class="form-input" data-charge-amount="${i}" value="${E.num(amount) || ''}" min="1" step="1" style="max-width: 120px;">
+        <button class="btn btn-sm btn-danger" data-remove-charge="${i}"><i class="fa-solid fa-xmark"></i></button>`;
+      list.appendChild(row);
+    };
+
+    modal.querySelector('#btnAddChargeRow').addEventListener('click', () => addChargeRow());
+
+    const presetPick = modal.querySelector('#chargePresetPick');
+    if (presetPick) {
+      presetPick.addEventListener('change', (e) => {
+        const p = presets()[Number(e.target.value)];
+        if (!p) return;
+        addChargeRow(p.label, p.amount);
+        e.target.value = '';
+      });
+    }
+
+    modal.querySelector('#chargeRows').addEventListener('click', (e) => {
+      const remove = e.target.closest('[data-remove-charge]');
+      if (remove) remove.closest('.charge-row').remove();
+    });
+
+    modal.querySelector('#btnCancelCharges').addEventListener('click', () => {
+      state.chargesFor = null;
+      modal.remove();
+    });
+
+    modal.querySelector('#btnSaveCharges').addEventListener('click', () => {
+      try {
+        api.setCharges(voucher.id, collectCharges());
+        state.chargesFor = null;
+        modal.remove();
+        toast('Charges saved.', 'ok');
+        loadVouchers();
+      } catch (err) {
+        toast(err.message || 'The charges could not be saved.', 'err');
+      }
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) { state.chargesFor = null; modal.remove(); }
+    });
+  }
+
+  // Collect form
+  $('collectForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const term = $('collectSearch').value;
+    const found = searchVouchers(term);
+    const box = $('collectSuggestions');
+    if (found.length === 0) {
+      box.style.display = 'block';
+      box.innerHTML = `<div class="hint">No voucher matches "${escapeHtml(term)}".</div>`;
+      return;
+    }
+    if (found.length === 1) {
+      box.style.display = 'none';
+      openVoucher(found[0]);
+      return;
+    }
+    box.style.display = 'block';
+    box.innerHTML = `<div class="hint" style="margin-bottom: 0.5rem;">Pick a record:</div>`
+      + found.map((f) => `<button class="btn btn-sm" data-pick="${f.id}" style="margin: 0.2rem; width: 100%; justify-content: space-between;">
+          <span>#${f.id} · ${escapeHtml(f.studentName ?? '')}</span>
+          <span>${escapeHtml(f.className ?? '')} · ${escapeHtml(f.month)} ${escapeHtml(f.year)} · ${money(f.balanceDue ?? 0)}</span>
+        </button>`).join('');
+    box.querySelectorAll('[data-pick]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const voucher = api.listFees({}).find((v) => String(v.id) === btn.dataset.pick);
+        if (voucher) { box.style.display = 'none'; openVoucher(voucher); }
+      });
+    });
+  });
+
+  // Tabs
+  function switchTab(name) {
+    const tab = name === 'collect' ? 'collect' : 'generate';
+    document.querySelectorAll('.tab-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    state.tab = tab;
+    $('tab-generate').style.display = tab === 'generate' ? 'block' : 'none';
+    $('tab-collect').style.display = tab === 'collect' ? 'block' : 'none';
+    setPrintPage(tab === 'generate' ? 'landscape' : 'portrait', tab === 'generate' ? '5mm' : '8mm');
+  }
+
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // --- Start ---------------------------------------------------------------
+
+  function init() {
+    buildFilterOptions();
+
+    bindBrand('schoolName', 'schoolName');
+    bindBrand('schoolAddress', 'schoolAddress');
+    bindBrand('bankName', 'bankName');
+    bindBrand('bankBranch', 'bankBranch');
+    bindBrand('bankAccountTitle', 'bankAccountTitle');
+    bindBrand('bankAccountNo', 'bankAccountNo');
+    bindBrand('instituteId', 'instituteId');
+    bindBrand('paymentMethods', 'paymentMethods');
+    bindBrand('challanNote', 'challanNote');
+
+    state.feeSettings = api.settings();
+    $('dueDays').value = state.feeSettings.dueDays;
+    $('lateFine').value = state.feeSettings.lateFine;
+
+    renderPresetPicker();
+    renderScopeOptions('');
+    renderPresetEditor();
+
+    setPrintPage('landscape', '5mm');
+
+    // Land on the right tab when opened from the menu (…/voucher-generator.html#collect).
+    tabFromHash();
+    loadVouchers();
+    renderChallans();
+  }
+
+  /** Opens the tab named in the address bar, if there is one. */
+  function tabFromHash() {
+    const hash = String(window.location.hash || '').toLowerCase();
+    if (hash.includes('collect')) switchTab('collect');
+    else if (hash.includes('generate')) switchTab('generate');
+  }
+
+  // A link to this page with a different hash does not reload it, so follow it here too.
+  window.addEventListener('hashchange', tabFromHash);
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -57,11 +57,60 @@ var MENU_CONFIG = {
           label: 'QR Attendance',
           desc: 'QR-based staff attendance.',
           href: '#tab-qr-attendance',
-          dataSection: 'tab-qr-attendance'
+          dataSection: 'tab-qr-attendance',
+          dataFeatureKey: 'qr_attendance'
         }
       ]
     },
-    { id: 'tab-fees', label: 'Fees', icon: 'fa-money-bill-wave', href: '#tab-fees', dataSection: 'tab-fees', dataFeatureKey: 'fees' },
+    {
+      id: 'tab-fees-menu',
+      label: 'Fees',
+      icon: 'fa-money-bill-wave',
+      href: '#tab-fees',
+      dataSection: 'tab-fees',
+      dataFeatureKey: 'fees',
+      activeSections: ['tab-fees'],
+      dropdown: [
+        {
+          label: 'Fees',
+          desc: 'Fee structures, payments and reports.',
+          href: '#tab-fees',
+          dataSection: 'tab-fees'
+        },
+        {
+          label: 'Collect Fee',
+          desc: 'Take a fee payment and print the receipt.',
+          href: '/voucher-generator.html#collect'
+        },
+        {
+          label: 'Generate Voucher',
+          desc: 'Make and print the class fee challans.',
+          href: '/voucher-generator.html#generate'
+        }
+      ]
+    },
+    {
+      id: 'tab-finance-menu',
+      label: 'Finance',
+      icon: 'fa-wallet',
+      dropdown: [
+        {
+          label: 'Overview',
+          desc: 'Review cash, income, and obligations.',
+          href: '/finance-overview.html'
+        },
+        {
+          label: 'Payroll',
+          desc: 'Manage employees and payroll.',
+          href: '/finance-payroll.html'
+        },
+        {
+          label: 'Expenses',
+          desc: 'Track bills, recurring costs, and estimates.',
+          href: '/finance-expenses.html'
+        }
+      ]
+    },
     {
       id: 'tab-automated',
       label: 'Automated',
@@ -70,7 +119,8 @@ var MENU_CONFIG = {
         {
           label: 'Generate Time Table',
           desc: 'Makes the weekly class timetable.',
-          href: '/tt2/'
+          href: '/tt2/',
+          dataFeatureKey: 'timetable'
         },
         {
           label: 'Generate Date Sheet',

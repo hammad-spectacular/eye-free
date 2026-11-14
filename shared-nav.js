@@ -51,9 +51,12 @@
         const activeSectionsAttr = Array.isArray(item.activeSections)
           ? `data-active-sections="${item.activeSections.join(' ')}"`
           : '';
+        // A dropdown parent keeps the feature key so the whole menu item is still
+        // gated (and hidden) when the tenant has that module switched off.
+        const featAttr = item.dataFeatureKey ? `data-feature-key="${item.dataFeatureKey}"` : '';
         html += `
           <div class="nav-tab-item" id="${item.id}">
-            <button type="button" class="tab-btn" aria-haspopup="true" aria-expanded="false" ${secAttr} ${activeSectionsAttr}>
+            <button type="button" class="tab-btn" aria-haspopup="true" aria-expanded="false" ${secAttr} ${activeSectionsAttr} ${featAttr}>
               ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
               <span>${item.label}</span>
               <i class="fas fa-chevron-down nav-arrow" aria-hidden="true"></i>

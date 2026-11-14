@@ -7522,6 +7522,11 @@
         renderAttendanceTabLive();
       }
 
+      // Students tab needs to filter after switch to show the correct data
+      if (newTabId === 'tab-students') {
+        filterStudents();
+      }
+
       if (clearSearch) {
         if (newTabId === 'tab-classes') {
           closeClassIsolation();
@@ -7531,10 +7536,13 @@
           const inp = document.getElementById('teacherSearchInput');
           if (inp) { inp.value = ''; filterTeachers(); }
         } else if (newTabId === 'tab-students') {
-          filterStudents();
+          const searchInp = document.getElementById('studentSearchInput');
+          const classFilter = document.getElementById('studentClassFilter');
+          if (searchInp) searchInp.value = '';
+          if (classFilter) classFilter.value = '';
         }
       }
-      
+
       // Update sticky bar visibility
       updateSaveBar();
     }

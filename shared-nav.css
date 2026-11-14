@@ -81,6 +81,12 @@
   display: inline-block;
 }
 
+/* A feature-gated tab hides its button. For a dropdown the wrapper would be left
+   behind as an empty gap in the nav, so hide the wrapper as well. */
+.nav-tab-item:has(> .tab-btn[data-feature-key][style*="display: none"]) {
+  display: none;
+}
+
 /* Small arrow after label */
 .nav-arrow {
   display: inline-block;
