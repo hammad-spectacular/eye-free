@@ -80,12 +80,30 @@ td input[type=date]{padding:5px 6px;min-width:140px}
 @media (max-width:620px){.row{grid-template-columns:1fr 1fr}.row.head{display:none}.ch,.sr{grid-template-columns:1fr 1fr}.ds-shell{margin:8px;border-radius:24px;min-height:calc(100dvh - 16px)}}
 @media print{td input{border:none;background:none;color:#000;padding:0}.warn-box,.ds-actionbar,.noprint{display:none}body{background:#fff;color:#000}.Easy,.Medium,.Hard{color:#000}.ds-shell{margin:0;border-radius:0}.ds-rail{display:none}.ds-main{overflow:visible}}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/rail.css">
 </head>
 <body>
 <div class="ds-shell">
-<aside class="ds-rail" aria-label="School navigation">
-  <a href="/admin.html" class="ds-brand"><span class="mk">TE</span><span><b>The Eye</b><span>School Management</span></span></a>
-  <button type="button" class="ds-back" id="backBtn"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back</button>
+<aside class="eye-sidebar" id="eyeSidebar" aria-label="Primary navigation">
+  <div class="eye-sidebar-brand">
+    <div class="eye-brand-logo">KA</div>
+    <div class="eye-brand-text">
+      <div class="eye-brand-name">khattack academy</div>
+      <div class="eye-brand-sub">School Management</div>
+    </div>
+  </div>
+  <nav class="tab-nav" id="tabNav">
+    <div class="tab-nav-inner" id="tabNavInner"></div>
+  </nav>
+  <div class="eye-rail-account">
+    <button type="button" class="eye-rail-avatar-btn" id="railAvatarBtn" aria-label="Account menu">AD</button>
+    <div class="eye-rail-menu" id="railAccountMenu" role="menu">
+      <div class="eye-rail-menu-head"><div class="eye-rail-menu-name">Administrator</div><div class="eye-rail-menu-role">Administrator</div></div>
+      <a class="eye-profile-menu-item" href="/admin.html"><i class="fas fa-gauge-high"></i><span>Dashboard</span></a>
+      <a class="eye-profile-menu-item" href="/admin.html#tab-settings" style="color:#D64545"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+    </div>
+  </div>
 </aside>
 <div class="ds-main">
 <div id="access-denied">Access denied. Admins only.</div>
@@ -355,6 +373,22 @@ $('end').value=iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()
 })();
 </script>
 </div></div>
+<script src="/menu-config.js"></script>
+<script src="/shared-nav.js"></script>
+<script src="/rail.js"></script>
+<script>
+(function(){
+  try{
+    if(window.initSharedNav) initSharedNav('admin');
+    document.querySelectorAll('#tabNavInner a[href^="#"]').forEach(a=>{ a.setAttribute('href','/admin.html'+a.getAttribute('href')); });
+    var fees=document.querySelector('#tabNavInner [data-section="tab-fees"]');
+    if(fees){fees.classList.add('active');}
+    var av=document.getElementById('railAvatarBtn'),menu=document.getElementById('railAccountMenu');
+    if(av&&menu){av.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
+      document.addEventListener('click',function(e){if(!menu.contains(e.target)&&e.target!==av)menu.classList.remove('open');});}
+  }catch(err){console.warn('rail init:',err);}
+})();
+</script>
 </body>
 </html>
 

@@ -222,3 +222,8 @@ select.finance-control, .finance-field select {
   .finance-main{padding-top:12px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+
+/* shared rail layout inside finance shell */
+.finance-shell{display:flex;gap:12px;align-items:stretch}
+.finance-body{flex:1;min-width:0;display:flex;flex-direction:column}
+@media (max-width:1023px){.finance-shell{flex-direction:column}}

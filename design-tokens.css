@@ -4,6 +4,9 @@
    ========================================================================== */
 
 :root {
+  --lime-deep:#C9DA3F;
+  --lime-deep-tint:rgba(201,218,63,.30);
+  --lime-deep-border:#B5C63A;
   /* Core Palette */
   --bg-app: #F1F2EE;         /* page canvas */
   --surface: #E4E8E1;        /* sage secondary cards */

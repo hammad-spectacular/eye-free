@@ -3,7 +3,7 @@
 <head>
   <script>
     (function () {
-      const savedTheme = localStorage.getItem('attendance-theme') || 'dark';
+      const savedTheme = 'light' || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
     })();
   </script>
@@ -1174,9 +1174,33 @@
     }
   </style>
     <link rel="stylesheet" href="ui-buttons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/rail.css">
 </head>
 
 <body>
+<div class="eye-shell fees-shell" style="display:flex;gap:12px;margin:12px;min-height:calc(100dvh - 24px);background:#EEF0EC;border-radius:32px;padding:12px;align-items:stretch">
+<aside class="eye-sidebar" id="eyeSidebar" aria-label="Primary navigation">
+  <div class="eye-sidebar-brand">
+    <div class="eye-brand-logo">KA</div>
+    <div class="eye-brand-text">
+      <div class="eye-brand-name">khattack academy</div>
+      <div class="eye-brand-sub">School Management</div>
+    </div>
+  </div>
+  <nav class="tab-nav" id="tabNav">
+    <div class="tab-nav-inner" id="tabNavInner"></div>
+  </nav>
+  <div class="eye-rail-account">
+    <button type="button" class="eye-rail-avatar-btn" id="railAvatarBtn" aria-label="Account menu">AD</button>
+    <div class="eye-rail-menu" id="railAccountMenu" role="menu">
+      <div class="eye-rail-menu-head"><div class="eye-rail-menu-name">Administrator</div><div class="eye-rail-menu-role">Administrator</div></div>
+      <a class="eye-profile-menu-item" href="/admin.html"><i class="fas fa-gauge-high"></i><span>Dashboard</span></a>
+      <a class="eye-profile-menu-item" href="/admin.html#tab-settings" style="color:#D64545"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+    </div>
+  </div>
+</aside>
+<div class="fees-body" style="flex:1;min-width:0;display:flex;flex-direction:column">
   <header class="header">
     <div class="header-inner">
       <div class="header-left">
@@ -1189,9 +1213,7 @@
         </div>
       </div>
       <div class="header-right">
-        <button class="theme-toggle" onclick="toggleTheme()">
-          <i class="fa-solid fa-moon"></i>
-        </button>
+        
       </div>
     </div>
   </header>
@@ -2386,5 +2408,22 @@
     });
   </script>
   <script src="./idle-logout.js"></script>
+</div></div>
+<script src="/menu-config.js"></script>
+<script src="/shared-nav.js"></script>
+<script src="/rail.js"></script>
+<script>
+(function(){
+  try{
+    if(window.initSharedNav) initSharedNav('admin');
+    document.querySelectorAll('#tabNavInner a[href^="#"]').forEach(a=>{ a.setAttribute('href','/admin.html'+a.getAttribute('href')); });
+    var fees=document.querySelector('#tabNavInner [data-section="tab-fees"]');
+    if(fees){fees.classList.add('active');}
+    var av=document.getElementById('railAvatarBtn'),menu=document.getElementById('railAccountMenu');
+    if(av&&menu){av.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
+      document.addEventListener('click',function(e){if(!menu.contains(e.target)&&e.target!==av)menu.classList.remove('open');});}
+  }catch(err){console.warn('rail init:',err);}
+})();
+</script>
 </body>
 </html>

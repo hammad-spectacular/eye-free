@@ -13,6 +13,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./rail.css">
   <style>
     :root{
       --bg-frame:#FFFFFF; --bg-panel:#EEF0EC; --surface:#E4E8E1; --card:#FFFFFF;
@@ -149,6 +150,180 @@
       .challan-drawer{width:100vw;border-radius:0}
     }
     @media (prefers-reduced-motion:reduce){.challan-drawer{animation:none}}
+
+    :root{
+      --bg-frame:#FFFFFF; --bg-panel:#EEF0EC; --surface:#E4E8E1; --card:#FFFFFF;
+      --ink:#111111; --ink-2:#5C5C57; --mute:#8A8A83; --line:#D5D9D0; --line-soft:#E7E9E2;
+      --lime:#E6F27A; --danger:#D64545; --danger-ink:#9B2C2C; --danger-bg:#FBE3E3;
+      --warn-bg:#FBF3DF; --warn-ink:#8A5A00; --ok-bg:#EAF7E4; --ok-ink:#2F7D3B;
+      --shadow:0 1px 2px rgba(17,17,17,.05); --shadow-lg:0 18px 50px rgba(17,17,17,.18);
+      color-scheme:light;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-frame);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.5}
+
+    .vg-shell{display:flex;gap:12px;margin:12px;min-height:calc(100dvh - 24px);background:var(--bg-panel);border-radius:32px;padding:12px}
+    .vg-rail{width:232px;flex-shrink:0;background:#111111;border-radius:28px;display:flex;flex-direction:column;padding:20px 16px;gap:14px}
+    .vg-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+    .vg-brand .mk{width:36px;height:36px;border-radius:10px;background:#1E1E1D;color:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+    .vg-brand b{font-size:14px;font-weight:600;display:block;line-height:1.2}
+    .vg-brand span{font-size:11px;color:#9A9A94}
+    .vg-rail-link{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border-radius:12px;color:#C9C9C2;text-decoration:none;font-size:14px;font-weight:500}
+    .vg-rail-link:hover{background:#1E1E1D;color:#fff}
+    .vg-rail-link.active{background:#2B2B29;color:#fff}
+    .vg-rail-link.active i{color:var(--lime)}
+    .vg-rail-foot{margin-top:auto;padding-top:12px;border-top:1px solid #2A2A28;font-size:12px;color:#9A9A94}
+
+    .vg-main{flex:1;min-width:0;display:flex;flex-direction:column}
+    .vg-topbar{display:flex;align-items:center;gap:12px;padding:8px 8px 0;flex-wrap:wrap}
+    .btn-back{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:500;font-size:14px;cursor:pointer;font-family:inherit;text-decoration:none}
+    .btn-back:hover{border-color:var(--ink)}
+    .page-title{font-size:28px;font-weight:600;letter-spacing:-.01em;flex:1;min-width:0}
+    .topbar-actions{display:flex;align-items:center;gap:8px}
+
+    .tab-nav{padding:12px 8px 0;position:static;background:transparent;border:none}
+    .tab-nav-inner{display:flex;gap:8px;overflow-x:auto;padding:0;scrollbar-width:none}
+    .tab-nav-inner::-webkit-scrollbar{display:none}
+    .tab-btn{position:relative;display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 22px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+    .tab-btn::after{display:none}
+    .tab-btn:hover{border-color:var(--ink)}
+    .tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .tab-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+    .page{max-width:none;margin:0;padding:16px 8px 60px}
+    .content-card{background:var(--surface);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+    .panel{background:var(--card);border:1px solid var(--line-soft);border-radius:24px;padding:24px;box-shadow:var(--shadow);margin-bottom:0}
+    .control-bar{background:transparent;border:none;padding:0;border-radius:0;box-shadow:none;margin-bottom:0}
+    .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+    .filter-grid>div{min-width:0}
+    .filter-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+    @media(max-width:900px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:560px){.filter-grid{grid-template-columns:1fr}.filter-actions{flex-direction:column}.filter-actions .btn{width:100%}}
+
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+    .form-input{width:100%;height:48px;background:#fff;border:1px solid var(--line);border-radius:14px;color:var(--ink);padding:0 16px;font-size:15px;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+    select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C5C57' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+    textarea.form-input{height:auto;padding:12px 16px;resize:vertical}
+    .form-input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 2px var(--lime)}
+    input[type=file].form-input{height:auto;padding:10px 16px;font-size:13px}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;text-decoration:none}
+    .btn:hover{border-color:var(--ink)}
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+    .btn-primary{background:var(--ink);border-color:var(--ink);color:#fff}
+    .btn-primary:hover{background:#2B2B29}
+    .btn-lime{background:var(--lime);border-color:var(--lime);color:#111;font-weight:600}
+    .btn-lime:hover{filter:brightness(.96)}
+    .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+    .btn-sm{height:36px;padding:0 14px;font-size:13px;border-radius:999px}
+    .btn-busy-label{font-weight:600;opacity:.85}
+
+    .table-wrap{overflow-x:auto;border-radius:20px}
+    table.data{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+    table.data th{text-align:left;padding:12px 14px;font-size:12px;font-weight:600;color:var(--ink-2);border-bottom:1px solid var(--line-soft);white-space:nowrap;background:#fff}
+    table.data td{padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+    table.data tbody tr{height:56px}
+    table.data tbody tr:last-child td{border-bottom:none}
+    table.data tbody tr:hover{background:rgba(230,242,122,.18)}
+    table.data td.num,table.data th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+    .badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
+    .badge-success{background:var(--lime);color:#111}
+    .badge-warning{background:var(--warn-bg);color:var(--warn-ink)}
+    .badge-danger{background:var(--danger-bg);color:var(--danger-ink)}
+    .badge-muted{background:#EFEFE9;color:var(--ink-2)}
+    .badge-info{background:var(--surface);color:var(--ink-2)}
+
+    .empty{padding:3rem 1rem;text-align:center;color:var(--ink-2);font-size:14px}
+    .row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+    .row>div{flex:1 1 170px}
+    .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+    .modal-backdrop{position:fixed;inset:0;background:rgba(17,17,17,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+    .modal{background:#fff;border-radius:24px;padding:24px;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+
+    .charges-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .charge-row{display:flex;gap:8px;align-items:center}
+    .charge-row .form-input{flex:1}
+    .preset-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    .preset-row{display:flex;gap:8px;align-items:center}
+    .preset-row .form-input{flex:1}
+    .preset-row .form-input[data-preset-amount]{flex:0 0 120px}
+    .preset-row .form-input[data-preset-class]{flex:0 0 180px}
+
+    .hint{font-size:13px;color:var(--mute);line-height:1.5}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--line);border-left:4px solid var(--ink);padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);z-index:300;max-width:min(560px,92vw)}
+    .toast.err{border-left-color:var(--danger);color:var(--danger-ink)}
+    .toast.ok{border-left-color:#111;color:var(--ink)}
+
+    .challan-overlay{position:fixed;inset:0;background:rgba(17,17,17,.45);z-index:150;display:flex;justify-content:flex-end;backdrop-filter:blur(2px)}
+    .challan-drawer{width:440px;max-width:100vw;height:100dvh;background:#fff;border-radius:24px 0 0 24px;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:drawerIn .2s ease}
+    @keyframes drawerIn{from{transform:translateX(40px);opacity:.6}to{transform:none;opacity:1}}
+    .challan-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line-soft)}
+    .challan-drawer-head h2{font-size:18px;font-weight:600}
+    .challan-drawer-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px}
+    .challan-drawer-body .panel{box-shadow:none;border:none;padding:0;background:transparent}
+    .challan-preview{border:1px solid var(--line-soft);border-radius:16px;padding:14px;background:var(--surface);font-size:13px;color:var(--ink-2)}
+    .challan-preview b{color:var(--ink);font-size:15px;display:block}
+    .challan-drawer-foot{display:flex;gap:10px;padding:16px 24px;border-top:1px solid var(--line-soft)}
+    .challan-drawer-foot .btn{flex:1}
+    .icon-btn2{width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+    .icon-btn2:hover{border-color:var(--ink)}
+
+    #tab-collect .panel{max-width:720px;margin:0 auto;width:100%}
+
+    @media(max-width:767px){
+      .vg-shell{margin:8px;border-radius:24px;min-height:calc(100dvh - 16px);padding:8px;gap:8px}
+      .vg-rail{display:none}
+      .page{padding:12px 4px 80px}
+      .content-card{padding:16px;border-radius:20px}
+      .vg-topbar .page-title{font-size:22px}
+      .challan-drawer{width:100vw;border-radius:0}
+    }
+    @media (prefers-reduced-motion:reduce){.challan-drawer{animation:none}}
+
+
+/* voucher table v2 */
+.vg-td-left{display:flex;align-items:center;gap:12px}
+.vg-avatar{width:32px;height:32px;border-radius:999px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.vg-student{display:flex;flex-direction:column;line-height:1.3;min-width:0;max-width:280px}
+.vg-student-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-student-sub{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vg-class-chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:13px;font-weight:500;white-space:nowrap}
+.vg-month,.vg-fee,.vg-arrears,.vg-pending{white-space:nowrap}
+.vg-arrears{color:var(--ink-2)}
+.vg-pending{font-weight:600;color:var(--ink)}
+.vg-charge-note{display:block;font-size:11px;color:var(--mute);font-weight:400}
+.vg-td-actions{white-space:nowrap;text-align:right}
+.vg-td-actions .btn{height:36px;padding:0 14px;font-size:13px}
+.vg-more{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;vertical-align:middle}
+.vg-more:hover{background:var(--lime-deep,#C9DA3F);border-color:#B5C63A}
+.vg-menu{position:fixed;z-index:400;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(17,17,17,.2);padding:6px;min-width:190px}
+.vg-menu-item{display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 12px;border:none;border-radius:10px;background:none;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;text-align:left}
+.vg-menu-item i{width:16px;text-align:center;color:var(--ink-2)}
+.vg-menu-item:hover{background:rgba(201,218,63,.30)}
+.vg-menu-item.danger{color:var(--danger-ink)}
+.vg-menu-item.danger i{color:var(--danger)}
+.vg-menu-item:disabled{opacity:.45;cursor:not-allowed}
+.vg-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px 0;flex-wrap:wrap}
+.vg-pager-info{font-size:13px;color:var(--ink-2)}
+.vg-pager-btns{display:flex;align-items:center;gap:8px}
+.vg-pager-page{font-size:13px;color:var(--ink-2);padding:0 6px}
+.vg-pager .btn{height:40px;padding:0 18px;font-size:13px}
+
+/* deep-lime hover (hover-capable devices only) */
+@media (hover:hover){
+  .data tbody tr{transition:background .15s ease}
+  .data tbody tr:hover{background:var(--lime-deep-tint,rgba(201,218,63,.30))}
+  .btn:not(.btn-primary):not(.btn-lime):not(.btn-danger):hover{background:var(--lime-deep,#C9DA3F);border-color:var(--lime-deep-border,#B5C63A)}
+  .btn-primary:hover,.btn-lime:hover{background:var(--lime-deep,#C9DA3F);border-color:var(--lime-deep-border,#B5C63A);color:#111}
+  .tab-btn:not(.active):hover{background:var(--lime-deep,#C9DA3F);border-color:var(--lime-deep-border,#B5C63A)}
+  .form-input:hover{border-color:var(--lime-deep-border,#B5C63A)}
+}
 
     /* ---------------- Print: challan (A4 landscape) ---------------- */
 
@@ -357,15 +532,30 @@
 </head>
 <body>
 
-<div class="vg-shell">
-<aside class="vg-rail no-print" aria-label="School navigation">
-  <a href="/admin.html" class="vg-brand"><span class="mk">TE</span><span><b>The Eye</b><span>School Management</span></span></a>
-  <a href="/admin.html" class="vg-rail-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-  <a href="/admin.html#tab-fees" class="vg-rail-link active"><i class="fa-solid fa-file-invoice-dollar"></i> Fees &amp; Accounts</a>
-  <div class="vg-rail-foot">Fee vouchers</div>
+<div class="vg-shell eye-shell">
+<aside class="eye-sidebar" id="eyeSidebar" aria-label="Primary navigation">
+  <div class="eye-sidebar-brand">
+    <div class="eye-brand-logo">KA</div>
+    <div class="eye-brand-text">
+      <div class="eye-brand-name">khattack academy</div>
+      <div class="eye-brand-sub">School Management</div>
+    </div>
+  </div>
+  <nav class="tab-nav" id="tabNav">
+    <div class="tab-nav-inner" id="tabNavInner"></div>
+  </nav>
+  <div class="eye-rail-account">
+    <button type="button" class="eye-rail-avatar-btn" id="railAvatarBtn" aria-label="Account menu">AD</button>
+    <div class="eye-rail-menu" id="railAccountMenu" role="menu">
+      <div class="eye-rail-menu-head"><div class="eye-rail-menu-name">Administrator</div><div class="eye-rail-menu-role">Administrator</div></div>
+      <a class="eye-profile-menu-item" href="/admin.html"><i class="fas fa-gauge-high"></i><span>Dashboard</span></a>
+      <a class="eye-profile-menu-item" href="/admin.html#tab-settings" style="color:#D64545"><i class="fas fa-sign-out-alt"></i><span>Log out</span></a>
+    </div>
+  </div>
 </aside>
 <div class="vg-main">
 <header class="vg-topbar no-print">
+  <button type="button" class="eye-hamburger-btn" id="vgNavToggle" aria-label="Open navigation" style="display:none;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;align-items:center;justify-content:center;cursor:pointer"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2.5" y1="4.5" x2="15.5" y2="4.5"/><line x1="2.5" y1="9" x2="15.5" y2="9"/><line x1="2.5" y1="13.5" x2="15.5" y2="13.5"/></svg></button>
   <button type="button" class="btn-back" id="btnBack"><i class="fa-solid fa-arrow-left"></i> Back</button>
   <h1 class="page-title">Fee vouchers</h1>
   <div class="topbar-actions">
@@ -409,14 +599,14 @@
           <input type="text" id="genSearch" class="form-input" placeholder="Name, father name or admission no.">
         </div>
       </div>
-      <div class="filter-actions">
-        <button class="btn" id="btnBulkCharge"><i class="fa-solid fa-plus"></i> Add charge to all</button>
-        <button class="btn" id="btnPrintBulk">
-          <i class="fa-solid fa-print"></i> Print <span id="countBulkNoun">Challans</span> (<span id="countBulk">0</span>)
-        </button>
+      <div class="filter-actions" style="justify-content:flex-start;">
         <button class="btn btn-lime" id="btnGenerate">
           <i class="fa-solid fa-file-circle-plus"></i> Generate vouchers
         </button>
+        <button class="btn" id="btnPrintBulk">
+          <i class="fa-solid fa-print"></i> Print <span id="countBulkNoun">Challans</span> (<span id="countBulk">0</span>)
+        </button>
+        <button class="btn" id="btnBulkCharge"><i class="fa-solid fa-plus"></i> Add charge to all</button>
       </div>
     </div>
 
@@ -524,20 +714,19 @@
       <table class="data">
         <thead>
           <tr>
-            <th style="width: 60px;">Sr No</th>
-            <th>Adm No</th>
-            <th>Student &amp; Father Name</th>
+            <th class="vg-th-left">Student</th>
             <th>Class</th>
             <th>Month</th>
-            <th>Monthly Fee</th>
-            <th>Arrears</th>
-            <th>Total Pending</th>
+            <th class="num">Monthly fee</th>
+            <th class="num">Arrears</th>
+            <th class="num">Pending</th>
             <th>Status</th>
-            <th>Action</th>
+            <th class="vg-th-actions">Actions</th>
           </tr>
         </thead>
         <tbody id="voucherRows"></tbody>
       </table>
+      <div id="voucherPager" class="vg-pager"></div>
       <div id="voucherEmpty" class="empty">No vouchers for this billing cycle yet.</div>
     </div>
 
@@ -946,6 +1135,23 @@
     renderVoucherTable();
   }
 
+  const VG_PAGE_SIZE = 25;
+  let voucherPage = 1;
+  let voucherSig = '';
+
+  function vgMonthLabel(month, year) {
+    const m = String(month ?? '');
+    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let mm = m.match(/^(\d{4})-(\d{1,2})/);
+    if (mm) return names[+mm[2] - 1] + ' ' + mm[1];
+    mm = m.match(/^(\d{1,2})$/);
+    if (mm) return names[+mm[1] - 1] + (year ? ' ' + year : '');
+    return (m + (year ? ' ' + year : '')).trim() || '-';
+  }
+  function vgInitials(name) {
+    return String(name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
   function renderVoucherTable() {
     const rows = $('voucherRows');
     const list = filteredVouchers();
@@ -953,8 +1159,15 @@
     $('countBulkNoun').textContent = list.length === 1 ? 'Challan' : 'Challans';
     updateBulkChargeTargets();
 
+    const sig = list.map(v => v.id).join(',');
+    if (sig !== voucherSig) { voucherSig = sig; voucherPage = 1; }
+    const totalPages = Math.max(1, Math.ceil(list.length / VG_PAGE_SIZE));
+    voucherPage = Math.min(Math.max(1, voucherPage), totalPages);
+    const pageRows = list.slice((voucherPage - 1) * VG_PAGE_SIZE, voucherPage * VG_PAGE_SIZE);
+
     if (list.length === 0) {
       rows.innerHTML = '';
+      $('voucherPager').innerHTML = '';
       $('voucherEmpty').style.display = 'block';
       $('voucherEmpty').textContent = state.vouchers.length
         ? 'No vouchers match your filters.'
@@ -963,35 +1176,103 @@
     }
     $('voucherEmpty').style.display = 'none';
 
-    rows.innerHTML = list.map((f, idx) => {
+    rows.innerHTML = pageRows.map((f) => {
       const badge = f.status === 'Paid' ? 'badge-success' : f.status === 'Partially Paid' ? 'badge-warning' : 'badge-danger';
-      const chargeNote = (f.charges ?? []).length
-        ? `<div style="font-size: 0.72rem; color: var(--text-muted);">incl. ${f.charges.map((c) => escapeHtml(c.label) + ' ' + c.amount).join(', ')}</div>`
-        : '';
+      const nCharges = (f.charges ?? []).length;
+      const chargeNote = nCharges ? `<span class="vg-charge-note">+${nCharges} charge${nCharges === 1 ? '' : 's'}</span>` : '';
+      const classLabel = [f.className, f.classSection].filter(Boolean).join(' \u00b7 ') || '-';
       return `<tr>
-        <td style="color: var(--text-muted);">#${idx + 1}</td>
-        <td style="font-weight: 700;">${escapeHtml(f.admissionNumber ?? 'N/A')}</td>
-        <td>
-          <div style="font-weight: 700;">${escapeHtml(f.studentName ?? '')}</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted);">S/O: ${escapeHtml(f.fatherName ?? '')}</div>
+        <td class="vg-td-left">
+          <span class="vg-avatar">${escapeHtml(vgInitials(f.studentName))}</span>
+          <span class="vg-student">
+            <span class="vg-student-name" title="${escapeHtml(f.studentName ?? '')}">${escapeHtml(f.studentName ?? '')}</span>
+            <span class="vg-student-sub">${escapeHtml(f.admissionNumber ?? 'N/A')}${f.fatherName ? ' \u00b7 S/O ' + escapeHtml(f.fatherName) : ''}</span>
+          </span>
         </td>
-        <td style="font-size: 0.82rem;">${escapeHtml(f.className ?? '')}</td>
-        <td>${escapeHtml(f.month)} ${escapeHtml(f.year)}</td>
-        <td>${money(f.amount)}${chargeNote}</td>
-        <td style="color: var(--text-muted);">${money(f.previousArrears ?? 0)}</td>
-        <td style="font-weight: 700; color: var(--danger);">${money(f.balanceDue ?? 0)}</td>
+        <td><span class="vg-class-chip">${escapeHtml(classLabel)}</span></td>
+        <td class="vg-month">${escapeHtml(vgMonthLabel(f.month, f.year))}</td>
+        <td class="num vg-fee">${money(f.amount)}${chargeNote}</td>
+        <td class="num vg-arrears">${money(f.previousArrears ?? 0)}</td>
+        <td class="num vg-pending">${money(f.balanceDue ?? 0)}</td>
         <td><span class="badge ${badge}">${escapeHtml(f.status)}</span></td>
-        <td>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-            <button class="btn btn-sm btn-primary" data-action="print" data-id="${f.id}"><i class="fa-solid fa-print"></i> Print</button>
-            <button class="btn btn-sm" data-action="details" data-id="${f.id}" title="Itemized fee &amp; charge breakdown"><i class="fa-solid fa-list"></i> Details</button>
-            <button class="btn btn-sm" data-action="charges" data-id="${f.id}">Charges</button>
-            <button class="btn btn-sm btn-danger" data-action="reverse" data-id="${f.id}">Reverse</button>
-          </div>
+        <td class="vg-td-actions">
+          <button class="btn btn-sm btn-primary" data-action="print" data-id="${f.id}"><i class="fa-solid fa-print"></i> Print</button>
+          <button class="vg-more" data-menu="${f.id}" aria-label="More actions" aria-haspopup="menu"><i class="fa-solid fa-ellipsis"></i></button>
         </td>
       </tr>`;
     }).join('');
+
+    const from = (voucherPage - 1) * VG_PAGE_SIZE + 1;
+    const to = Math.min(list.length, voucherPage * VG_PAGE_SIZE);
+    $('voucherPager').innerHTML = `
+      <span class="vg-pager-info">Showing ${from}\u2013${to} of ${list.length}</span>
+      <span class="vg-pager-btns">
+        <button class="btn btn-sm" id="vgPrev" ${voucherPage <= 1 ? 'disabled' : ''}>Previous</button>
+        <span class="vg-pager-page">Page ${voucherPage} of ${totalPages}</span>
+        <button class="btn btn-sm" id="vgNext" ${voucherPage >= totalPages ? 'disabled' : ''}>Next</button>
+      </span>`;
+    $('vgPrev')?.addEventListener('click', () => { voucherPage--; renderVoucherTable(); });
+    $('vgNext')?.addEventListener('click', () => { voucherPage++; renderVoucherTable(); });
   }
+
+  // Portal row menu: Details / Charges / Reverse — reuses existing data-action handlers.
+  let openMenuEl = null;
+  function closeRowMenu() { if (openMenuEl) { openMenuEl.remove(); openMenuEl = null; } }
+  function triggerVoucherAction(action, id) {
+    const proxy = document.createElement('button');
+    proxy.setAttribute('data-action', action);
+    proxy.setAttribute('data-id', id);
+    proxy.style.display = 'none';
+    $('voucherRows').appendChild(proxy);
+    proxy.click();
+    proxy.remove();
+  }
+  function openRowMenu(anchor, voucherId) {
+    closeRowMenu();
+    const v = (state.vouchers || []).find(x => String(x.id) === String(voucherId))
+      || filteredVouchers().find(x => String(x.id) === String(voucherId));
+    if (!v) return;
+    const paid = String(v.status || '').toLowerCase() === 'paid';
+    const menu = document.createElement('div');
+    menu.className = 'vg-menu';
+    menu.setAttribute('role', 'menu');
+    const items = [
+      { action: 'details', icon: 'fa-eye', label: 'Details' },
+      { action: 'charges', icon: 'fa-pen', label: paid ? 'Edit (paid)' : 'Edit' },
+      { action: 'reverse', icon: 'fa-rotate-left', label: 'Reverse', danger: true }
+    ];
+    menu.innerHTML = items.map(it => `
+      <button class="vg-menu-item${it.danger ? ' danger' : ''}" role="menuitem" data-action="${it.action}" ${it.action === 'charges' && paid ? 'disabled title="Paid vouchers can\'t be edited"' : ''}>
+        <i class="fa-solid ${it.icon}"></i> ${it.label}
+      </button>`).join('');
+    document.body.appendChild(menu);
+    const r = anchor.getBoundingClientRect();
+    menu.style.top = (r.bottom + 6) + 'px';
+    menu.style.left = Math.max(8, r.right - 200) + 'px';
+    if (r.bottom + menu.offsetHeight + 12 > window.innerHeight) {
+      menu.style.top = 'auto';
+      menu.style.bottom = (window.innerHeight - r.top + 6) + 'px';
+    }
+    openMenuEl = menu;
+    menu.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-action]');
+      if (!b || b.disabled) return;
+      closeRowMenu();
+      triggerVoucherAction(b.dataset.action, voucherId);
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (openMenuEl && !openMenuEl.contains(e.target) && !e.target.closest('.vg-more')) closeRowMenu();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRowMenu(); });
+
+  // ⋯ button opens the portal menu (delegated — rows re-render every page)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.vg-more');
+    if (!btn) return;
+    e.stopPropagation();
+    openRowMenu(btn, btn.dataset.menu);
+  });
 
   function renderChallans() {
     const target = state.printTargetId === -1
@@ -2457,6 +2738,24 @@
   });
   var bb=document.getElementById('btnBack');
   if(bb)bb.addEventListener('click',function(){history.length>1?history.back():location.href='/admin.html'});
+})();
+</script>
+<script src="./menu-config.js"></script>
+<script src="./shared-nav.js"></script>
+<script src="./rail.js"></script>
+<script>
+(function(){
+  try{
+    if(window.initSharedNav) initSharedNav('admin');
+    document.querySelectorAll('#tabNavInner a[href^="#"]').forEach(a=>{ a.setAttribute('href','/admin.html'+a.getAttribute('href')); });
+    var fees=document.querySelector('#tabNavInner [data-section="tab-fees"]');
+    if(fees){fees.classList.add('active');}
+    var tog=document.getElementById('vgNavToggle');
+    if(tog)tog.addEventListener('click',function(){document.querySelector('.vg-shell')?.classList.toggle('mobile-drawer-open');});
+    var av=document.getElementById('railAvatarBtn'),menu=document.getElementById('railAccountMenu');
+    if(av&&menu){av.addEventListener('click',function(e){e.stopPropagation();menu.classList.toggle('open');});
+      document.addEventListener('click',function(e){if(!menu.contains(e.target)&&e.target!==av)menu.classList.remove('open');});}
+  }catch(err){console.warn('rail init:',err);}
 })();
 </script>
 </body>

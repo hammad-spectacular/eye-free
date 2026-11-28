@@ -5,8 +5,7 @@
   <script>
     // Execute immediately to prevent theme flickering (FOUC)
     (function () {
-      const savedTheme = localStorage.getItem('attendance-theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute('data-theme', 'light');
     })();
   </script>
   <meta charset="UTF-8">
@@ -2500,9 +2499,9 @@
     <aside class="eye-sidebar" id="eyeSidebar" aria-label="Primary navigation">
       <div class="eye-sidebar-brand">
         <div class="eye-brand-left">
-          <div class="eye-brand-logo" id="sidebarBrandLogo">TE</div>
+          <div class="eye-brand-logo" id="sidebarBrandLogo">KA</div>
           <div class="eye-brand-text">
-            <div class="eye-brand-name" id="sidebarSchoolName">The Eye</div>
+            <div class="eye-brand-name" id="sidebarSchoolName">khattack academy</div>
             <div class="eye-brand-sub">School Management</div>
           </div>
         </div>
@@ -2650,9 +2649,7 @@
                   <button type="button" class="btn btn-primary" onclick="openChangePasswordModal()">
                     <i class="fas fa-key"></i> Change password
                   </button>
-                  <button type="button" class="btn btn-secondary" onclick="toggleTheme()">
-                    <i class="fas fa-circle-half-stroke"></i> Toggle light / dark
-                  </button>
+
                 </div>
               </div>
             </div>
@@ -9626,6 +9623,7 @@
 
   <script src="./menu-config.js"></script>
   <script src="./shared-nav.js"></script>
+  <script src="./rail.js"></script>
   <script src="./overview-dashboard.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
