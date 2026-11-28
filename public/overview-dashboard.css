@@ -22,7 +22,7 @@ body {
 
 /* ---------- BLACK LEFT RAIL (#111111) ---------- */
 .eye-sidebar {
-  width: var(--sidebar-w);
+  width: 256px;
   flex-shrink: 0;
   background: var(--rail);
   border-radius: var(--radius-rail);
@@ -228,17 +228,32 @@ body {
   transform: none !important;
   box-shadow: none !important;
   border: none !important;
-  border-left: 1px solid var(--rail-divider) !important;
   border-radius: 0 !important;
-  margin: 4px 0 0 22px !important;
-  padding: 2px 0 2px var(--space-2) !important;
+  margin: 0 !important;
+  padding: 0 !important;
   background: transparent !important;
   min-width: 0 !important;
-  display: none;
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  opacity: 0;
+  transition: grid-template-rows 0.2s ease, opacity 0.2s ease, visibility 0.2s;
+}
+
+.eye-sidebar .nav-dropdown-inner {
+  display: block;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
+  margin-left: 22px;
+  border-left: 1px solid var(--rail-divider);
+  padding: 2px 0 2px var(--space-2);
 }
 
 .eye-sidebar .nav-tab-item.open > .nav-dropdown {
-  display: block;
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
 }
 
 .eye-sidebar .nav-dropdown-item {
@@ -246,7 +261,7 @@ body {
   border-radius: var(--radius-rail-item);
   text-decoration: none;
   font-size: var(--text-xs);
-  color: var(--rail-icon);
+  color: #C9C9C2;
 }
 
 .eye-sidebar .nav-dropdown-item:hover {
@@ -255,15 +270,48 @@ body {
   background: var(--rail-hover);
 }
 
+.eye-sidebar .nav-dropdown-item.active {
+  color: var(--accent);
+}
+
+.eye-sidebar .nav-dropdown-title {
+  color: inherit;
+}
+
 .eye-sidebar .nav-dropdown-desc {
   display: none;
 }
 
-/* Collapsed 76px rail: 44x44 rounded-square items + right-side tooltips (150ms delay) */
+/* Collapsed 76px rail: 44x44 rounded-square items + right-side tooltips (150ms delay).
+   Dropdown groups open a flyout panel to the right of the rail instead. */
 .eye-shell.sidebar-collapsed .eye-sidebar .tab-btn span,
-.eye-shell.sidebar-collapsed .eye-sidebar .nav-arrow,
-.eye-shell.sidebar-collapsed .eye-sidebar .nav-dropdown {
+.eye-shell.sidebar-collapsed .eye-sidebar .nav-arrow {
   display: none !important;
+}
+
+.eye-shell.sidebar-collapsed .eye-sidebar .nav-dropdown {
+  position: fixed !important;
+  left: calc(var(--space-3) + var(--sidebar-collapsed-w) + var(--space-2)) !important;
+  top: auto !important;
+  z-index: 1500;
+}
+
+.eye-shell.sidebar-collapsed .eye-sidebar .nav-dropdown-inner {
+  min-width: 210px;
+  margin-left: 0;
+  border-left: none;
+  padding: 6px;
+  background: var(--rail);
+  border: 1px solid var(--rail-divider);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+}
+
+.eye-shell.sidebar-collapsed .eye-sidebar .nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  font-size: var(--text-sm);
 }
 
 .eye-shell.sidebar-collapsed .eye-sidebar .tab-btn {
@@ -439,6 +487,14 @@ body {
   gap: var(--space-3);
   flex-wrap: nowrap;
   min-width: 0;
+}
+
+/* Narrow widths: header actions live in the rail avatar menu instead of
+   overflowing the topbar (Change password / Logout are duplicated there). */
+@media (max-width: 1360px) {
+  .eye-topbar-right .eye-hdr-btn {
+    display: none;
+  }
 }
 
 /* Year Pill */
@@ -874,6 +930,10 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .ov-kpi-icon {
@@ -912,6 +972,7 @@ body {
   font-size: var(--text-xs);
   color: var(--ink-2);
   line-height: 1.4;
+  margin-top: 12px;
 }
 
 /* Segmented Pill Gauge (10 rounded vertical pills) */
@@ -1122,6 +1183,12 @@ body {
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+}
+
+.ov-action-left > span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ov-action-circle {

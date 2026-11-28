@@ -98,6 +98,10 @@
   pointer-events: auto;
 }
 
+.nav-dropdown-inner {
+  display: contents;
+}
+
 .nav-dropdown-item {
   display: block;
   padding: 8px 12px;

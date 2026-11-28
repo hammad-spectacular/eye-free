@@ -432,7 +432,7 @@
       color: #fff;
       background: var(--gradient);
       border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     }
 
     .tab-nav-toggle {
@@ -6253,7 +6253,8 @@
     let stuSortDir = 'asc';
     let stuPage = 1;
     const STU_PAGE_SIZE = 25;
-    const selectedStudentIds = new Set();
+    // selectedStudentIds is declared once near the bulk-selection state below;
+    // a second declaration here used to be a SyntaxError that killed the whole script.
 
     function toggleStudentSort(key) {
       if (stuSortKey === key) {
@@ -8337,7 +8338,14 @@
 
       // Hide all tabs
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('active');
+        el.removeAttribute('aria-current');
+      });
+      document.querySelectorAll('.nav-dropdown-item').forEach(el => {
+        el.classList.remove('active');
+        el.removeAttribute('aria-current');
+      });
 
       // Close other modals if they are open
       if (typeof closeEditTeacherModal === 'function') closeEditTeacherModal();
@@ -8349,12 +8357,41 @@
       const newTab = document.querySelector(panelSelector);
       if (newTab) newTab.classList.add('active');
       
-      const newBtn = Array.from(document.querySelectorAll('.tab-btn[data-section]')).find(btn =>
+      const newBtn = Array.from(document.querySelectorAll('.tab-btn[data-section], .nav-dropdown-item[data-section]')).find(btn =>
         btn.dataset.section === newTabId ||
         (btn.dataset.activeSections || '').split(/\s+/).includes(newTabId)
       );
-      if (newBtn) newBtn.classList.add('active');
+      if (newBtn) {
+        newBtn.classList.add('active');
+        newBtn.setAttribute('aria-current', 'page');
+      }
+
+      // Accordion: only the group containing the active section stays open,
+      // and it opens automatically when a child page is active.
+      document.querySelectorAll('#tabNavInner .nav-tab-item.open').forEach(wrap => {
+        if (newBtn && wrap.contains(newBtn)) return;
+        wrap.classList.remove('open');
+        const b = wrap.querySelector('.tab-btn');
+        if (b) b.setAttribute('aria-expanded', 'false');
+      });
+      const parentWrap = newBtn && newBtn.closest('.nav-tab-item');
+      if (parentWrap) {
+        parentWrap.classList.add('open');
+        const pb = parentWrap.querySelector('.tab-btn');
+        if (pb) pb.setAttribute('aria-expanded', 'true');
+      }
+
       updateMobileNavLabel();
+
+      // Keep the page title and browser tab in sync with the visible section.
+      const sectionLabel = (newBtn ? newBtn.textContent : '').replace(/\s+/g, ' ').trim() || 'Overview';
+      document.title = sectionLabel + ' — The Eye';
+
+      // Return the content area to the top on every section change.
+      const mainEl = document.querySelector('.main');
+      if (mainEl) mainEl.scrollTop = 0;
+      const shellEl = document.querySelector('.eye-main-shell');
+      if (shellEl) shellEl.scrollTop = 0;
 
       activeTabId = newTabId;
       history.replaceState(null, '', '#' + newTabId);
@@ -8753,6 +8790,19 @@
 
         document.addEventListener('keydown', event => {
           if (event.key === 'Escape') setMobileNavOpen(false);
+        });
+
+        // Browser back/forward and manual hash edits: keep the visible panel
+        // in sync with location.hash. Unknown or gated hashes fall back to the
+        // first permitted section (Overview by default).
+        window.addEventListener('hashchange', () => {
+          const h = window.location.hash.substring(1);
+          if (h && document.querySelector(`.tab-content[id="${CSS.escape(h)}"]`) && isSectionPermitted(h)) {
+            switchTab(h);
+          } else {
+            const fallback = firstPermittedSection();
+            if (fallback) switchTab(fallback);
+          }
         });
         sectionTabGlobalHandlersBound = true;
       }

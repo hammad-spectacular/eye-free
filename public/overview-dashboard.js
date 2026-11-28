@@ -255,6 +255,10 @@
   function renderKpis(data, priorities) {
     const el = document.getElementById('ovKpiGrid');
     if (!el) return;
+    data = data || {};
+    data.students = data.students || {};
+    data.attendance = data.attendance || {};
+    data.fees = data.fees || {};
 
     const stuCount = data.students.active || 0;
     const stuLimit = cachedStudentLimit || 500;
@@ -301,12 +305,12 @@
       <div class="ov-kpi-card is-lime">
         <div>
           <div class="ov-kpi-top">
-            <span class="ov-kpi-title">Today's attendance</span>
+            <span class="ov-kpi-title">Attendance today</span>
             <span class="ov-kpi-icon" aria-hidden="true"><i class="fas fa-clipboard-check"></i></span>
           </div>
           <div class="ov-kpi-value" style="${!attMarked ? 'font-size:28px;' : ''}">${esc(attVal)}</div>
         </div>
-        ${buildGauge(attGaugePct, 10)}
+        ${attMarked ? buildGauge(attGaugePct, 10) : ''}
         <button type="button" class="ov-black-pill-btn" data-nav-tab="tab-attendance">Mark attendance</button>
       </div>
 
@@ -318,7 +322,7 @@
           </div>
           <div class="ov-kpi-value" style="${data.fees && data.fees.enabled && data.fees.expected === 0 ? 'font-size:28px;' : ''}">${esc(feeVal)}</div>
         </div>
-        ${buildGauge(feePct, 10)}
+        ${data.fees.enabled && data.fees.expected > 0 ? buildGauge(feePct, 10) : ''}
         ${feeAction || `<div class="ov-kpi-sub">${data.fees && data.fees.enabled ? `${formatPKR(data.fees.collected)} collected` : 'Fees disabled'}</div>`}
       </div>
 
@@ -330,7 +334,7 @@
           </div>
           <div class="ov-kpi-value">${priCount}</div>
         </div>
-        ${buildGauge(Math.min(100, priCount * 20), 10)}
+        ${priCount > 0 ? buildGauge(Math.min(100, priCount * 20), 10) : ''}
       </div>`;
   }
 
@@ -404,7 +408,7 @@
               <span class="ov-action-circle" aria-hidden="true"><i class="fas ${esc(a.icon)}"></i></span>
               <span>${esc(a.label)}</span>
             </span>
-            <i class="fas fa-arrow-up-right-from-square ov-action-arrow" aria-hidden="true"></i>
+            <i class="fas fa-arrow-right ov-action-arrow" aria-hidden="true"></i>
           </button>`).join('')}
       </div>`;
   }

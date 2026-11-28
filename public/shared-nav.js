@@ -30,15 +30,16 @@
         // A dropdown parent keeps the feature key so the whole menu item is still
         // gated (and hidden) when the tenant has that module switched off.
         const featAttr = item.dataFeatureKey ? `data-feature-key="${item.dataFeatureKey}"` : '';
-        const tipAttr = `data-tooltip="${item.label}" title="${item.label}"`;
+        const tipAttr = `data-tooltip="${item.label}"`;
         html += `
           <div class="nav-tab-item" id="${item.id}">
-            <button type="button" class="tab-btn" aria-haspopup="true" aria-expanded="false" ${secAttr} ${activeSectionsAttr} ${featAttr} ${tipAttr}>
+            <button type="button" class="tab-btn" aria-haspopup="true" aria-expanded="false" aria-controls="${item.id}-menu" ${secAttr} ${activeSectionsAttr} ${featAttr} ${tipAttr}>
               ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
               <span>${item.label}</span>
               <i class="fas fa-chevron-down nav-arrow" aria-hidden="true"></i>
             </button>
-            <div class="nav-dropdown" role="menu">
+            <div class="nav-dropdown" id="${item.id}-menu" role="menu">
+              <div class="nav-dropdown-inner">
               ${item.dropdown.map(sub => {
                 const toastAttr = sub.toast ? `onclick="if(window.showToast){showToast('${sub.toast}','info');}else{alert('${sub.toast}');}return false;"` : '';
                 const secAttr = sub.dataSection ? `data-section="${sub.dataSection}"` : '';
@@ -59,6 +60,7 @@
                   ${sub.desc ? `<span class="nav-dropdown-desc">${sub.desc}</span>` : ''}
                 </a>
               `}).join('')}
+              </div>
             </div>
           </div>
         `;
@@ -69,7 +71,7 @@
         const optStyle = item.optional ? 'style="display:none;"' : '';
         const actAttr = item.action ? `onclick="${item.action}"` : '';
         const clsActive = item.active ? 'active' : '';
-        const tipAttr = `data-tooltip="${item.label}" title="${item.label}"`;
+        const tipAttr = `data-tooltip="${item.label}"`;
 
         if (item.action && !item.href) {
           html += `
@@ -124,7 +126,8 @@
       const dd = wrap.querySelector('.nav-dropdown');
       if (!btn || !dd) return;
       const rect = btn.getBoundingClientRect();
-      dd.style.top = (rect.bottom + window.scrollY) + 'px';
+      const isFixed = getComputedStyle(dd).position === 'fixed';
+      dd.style.top = (isFixed ? rect.bottom : rect.bottom + window.scrollY) + 'px';
       dd.style.left = rect.left + 'px';
       dd.style.minWidth = rect.width + 'px';
       dd.style.opacity = '1';
