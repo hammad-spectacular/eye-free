@@ -1704,3 +1704,59 @@ body {
   .eye-shell{margin:8px;border-radius:24px;min-height:calc(100dvh - 16px)}
   .eye-sidebar{top:16px;height:calc(100dvh - 32px)}
 }
+
+/* ================= Icon rail: 76px, expands to 264px overlay on hover/focus ================= */
+.eye-sidebar{overflow:visible}
+.eye-sidebar .eye-brand-text,
+.eye-sidebar .tab-btn span,
+.eye-sidebar .nav-arrow{opacity:0;transition:opacity .15s ease .06s;white-space:nowrap}
+.eye-sidebar .eye-sidebar-brand{justify-content:center;padding:0}
+.eye-sidebar .tab-btn{width:44px;height:44px;margin:0 auto;padding:0;justify-content:center}
+.eye-sidebar .nav-tab-item{display:flex;justify-content:center}
+.eye-sidebar .nav-tab-item>.tab-btn{width:44px;margin:0}
+.eye-sidebar .nav-tab-item.open>.nav-dropdown{display:grid}
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  .eye-sidebar:not(:hover):not(:focus-within) .nav-tab-item.open>.nav-dropdown{display:none}
+}
+.eye-sidebar .eye-rail-account{align-items:center;padding:var(--space-3) 0}
+.eye-sidebar .eye-rail-avatar-btn{margin:0 auto}
+
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  .eye-hamburger-btn{display:none !important}
+  .eye-sidebar{width:76px;transition:width .2s cubic-bezier(.4,0,.2,1)}
+  .eye-sidebar:hover,.eye-sidebar:focus-within{
+    width:264px;position:fixed;left:12px;top:24px;bottom:24px;height:auto;z-index:950;
+    box-shadow:var(--shadow-lg);
+  }
+  .eye-sidebar:hover .eye-brand-text,
+  .eye-sidebar:focus-within .eye-brand-text,
+  .eye-sidebar:hover .tab-btn span,
+  .eye-sidebar:focus-within .tab-btn span,
+  .eye-sidebar:hover .nav-arrow,
+  .eye-sidebar:focus-within .nav-arrow{opacity:1}
+  .eye-sidebar:hover .eye-sidebar-brand{justify-content:flex-start;padding:0 var(--space-4)}
+  .eye-sidebar:hover .tab-btn,
+  .eye-sidebar:focus-within .tab-btn{width:100%;margin:0;padding:0 var(--space-3);justify-content:flex-start}
+  .eye-sidebar:hover .nav-tab-item>.tab-btn,
+  .eye-sidebar:focus-within .nav-tab-item>.tab-btn{width:100%;margin:0}
+  /* accordion children only while expanded */
+  .eye-sidebar:hover .nav-tab-item.open>.nav-dropdown,
+  .eye-sidebar:focus-within .nav-tab-item.open>.nav-dropdown{display:grid}
+}
+
+/* ================= Mobile / touch: slide-in drawer ================= */
+@media (max-width:1023px),(hover:none){
+  .eye-hamburger-btn{display:inline-flex !important}
+  .eye-sidebar{width:min(300px,86vw) !important}
+  .eye-sidebar .eye-brand-text,
+  .eye-sidebar .tab-btn span,
+  .eye-sidebar .nav-arrow{opacity:1 !important}
+  .eye-sidebar .eye-sidebar-brand{justify-content:flex-start;padding:0 var(--space-4)}
+  .eye-sidebar .tab-btn{width:100%;margin:0;padding:0 var(--space-3);justify-content:flex-start}
+  .eye-sidebar .nav-tab-item>.tab-btn{width:100%;margin:0}
+  .eye-sidebar .nav-tab-item.open>.nav-dropdown{display:grid}
+}
+@media (max-width:1023px){
+  .eye-sidebar{position:fixed;left:8px;top:8px;bottom:8px;height:auto;transform:translateX(-115%);z-index:950;transition:transform .22s ease}
+  .eye-shell.mobile-drawer-open .eye-sidebar{transform:translateX(0)}
+}

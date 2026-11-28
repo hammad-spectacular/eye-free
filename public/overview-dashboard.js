@@ -124,7 +124,7 @@
 
     const actionLabels = {
       'unassigned-classes': 'Assign',
-      'unmarked-attendance': 'Mark',
+      'unmarked-attendance': 'Check',
       'overdue-fees': 'Review',
       'absent-today': 'View',
       'pending-complaints': 'Review',
@@ -208,11 +208,6 @@
     window.appData.selectedYear = activeYear;
     localStorage.setItem('eye-selected-year', activeYear);
 
-    const trendYearSel = document.getElementById('trendYearSelect');
-    if (trendYearSel) {
-      trendYearSel.innerHTML = years.map(y => `<option value="${esc(y)}">${esc(y)}</option>`).join('');
-      trendYearSel.value = activeYear;
-    }
 
     const settingsYearsList = document.getElementById('settingsYearsList');
     if (settingsYearsList) {
@@ -305,13 +300,11 @@
       <div class="ov-kpi-card is-lime">
         <div>
           <div class="ov-kpi-top">
-            <span class="ov-kpi-title">Attendance today</span>
+            <span class="ov-kpi-title">Attendance</span>
             <span class="ov-kpi-icon" aria-hidden="true"><i class="fas fa-clipboard-check"></i></span>
           </div>
-          <div class="ov-kpi-value" style="${!attMarked ? 'font-size:28px;' : ''}">${esc(attVal)}</div>
         </div>
-        ${attMarked ? buildGauge(attGaugePct, 10) : ''}
-        <button type="button" class="ov-black-pill-btn" data-nav-tab="tab-attendance">Mark attendance</button>
+        <button type="button" class="ov-black-pill-btn" data-nav-tab="tab-attendance">Check attendance</button>
       </div>
 
       <div class="ov-kpi-card">
@@ -389,7 +382,7 @@
     const actions = [];
     if (f.student_management !== false) actions.push({ label: 'Add student', icon: 'fa-plus', tab: 'tab-students' });
     if (f.fees) actions.push({ label: 'Receive fee', icon: 'fa-receipt', href: '/voucher-generator.html#collect' });
-    if (f.attendance !== false) actions.push({ label: 'Mark attendance', icon: 'fa-clipboard-check', tab: 'tab-attendance' });
+    if (f.attendance !== false) actions.push({ label: 'Check attendance', icon: 'fa-clipboard-check', tab: 'tab-attendance' });
     if (f.fees) actions.push({ label: 'Fee voucher', icon: 'fa-file-invoice-dollar', href: '/voucher-generator.html#generate' });
     actions.push({ label: 'Manage classes', icon: 'fa-book-open', tab: 'tab-classes' });
     if (f.teacher_management !== false) actions.push({ label: 'Add staff', icon: 'fa-user-plus', tab: 'tab-teachers' });
@@ -410,101 +403,6 @@
             </span>
             <i class="fas fa-arrow-right ov-action-arrow" aria-hidden="true"></i>
           </button>`).join('')}
-      </div>`;
-  }
-
-  function renderAttendanceTrend(data) {
-    const el = document.getElementById('ovTrendCard');
-    if (!el) return;
-    const trend = data.attendance.trend || [];
-    const markedToday = data.attendance.markedTotal > 0;
-    const activeYear = data.selectedYear || '2026-27';
-
-    if (trend.length === 0) {
-      el.innerHTML = `
-        <div class="ov-card-head">
-          <div class="ov-card-title">Attendance trend</div>
-          <button type="button" class="ov-card-action" data-nav-tab="tab-stats">View report</button>
-        </div>
-        <div class="ov-empty">
-          <i class="fas fa-chart-simple"></i>
-          <span>No attendance records for ${esc(activeYear)} yet.</span>
-          <button type="button" class="ov-empty-action" data-nav-tab="tab-attendance">Mark attendance</button>
-        </div>`;
-      return;
-    }
-
-    const todayIso = new Date().toISOString().slice(0, 10);
-    const trendByDate = {};
-    trend.forEach(d => { trendByDate[d.date] = d; });
-
-    // Last 8 calendar days ending today. Days without attendance records
-    // render as dashed ghost pills — no invented data.
-    const days = [];
-    const cursor = new Date();
-    for (let i = 7; i >= 0; i--) {
-      const dt = new Date(cursor);
-      dt.setDate(dt.getDate() - i);
-      const isoD = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
-      days.push({ iso: isoD, d: trendByDate[isoD] || null });
-    }
-
-    const barsHtml = days.map((day, idx) => {
-      const isToday = day.iso === todayIso || (!trendByDate[todayIso] && idx === days.length - 1 && markedToday);
-      const lbl = shortDateLabel(day.iso) || day.iso;
-      if (!day.d) {
-        return `
-        <div class="ov-day ov-day-ghost" aria-hidden="true">
-          <span class="ov-day-pill ghost"><i class="ov-ghost-dot"></i></span>
-          <span class="ov-day-label">${esc(lbl)}</span>
-        </div>`;
-      }
-      const pct = Math.max(0, Math.min(100, Number(day.d.pct) || 0));
-      return `
-        <button type="button" class="ov-day ${isToday ? 'today' : ''}" aria-label="${esc(day.iso)}: ${day.d.pct}% present">
-          <span class="ov-day-bubble">${esc(String(day.d.pct))}%</span>
-          <span class="ov-day-pill">
-            <span class="ov-day-fill" style="height:${pct}%"></span>
-            <i class="ov-dot-lime" style="bottom:${pct}%" aria-hidden="true"></i>
-            <i class="ov-dot-top" aria-hidden="true"></i>
-          </span>
-          <span class="ov-day-label">${esc(lbl)}</span>
-        </button>`;
-    }).join('');
-
-    let footerClass = 'neutral';
-    let footerIcon = 'fa-clock';
-    let footerMsg = 'Attendance not marked yet';
-    if (markedToday) {
-      if (data.attendance.absentToday > 0) {
-        footerClass = 'warn';
-        footerIcon = 'fa-circle-exclamation';
-        footerMsg = `${data.attendance.absentToday} student${data.attendance.absentToday === 1 ? '' : 's'} absent today`;
-      } else {
-        footerClass = 'ok';
-        footerIcon = 'fa-circle-check';
-        footerMsg = 'No absences today';
-      }
-    }
-
-    el.innerHTML = `
-      <div class="ov-card-head">
-        <div class="ov-card-title">Attendance trend</div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <span class="ov-legend"><i class="ov-legend-dot lime"></i>Present<i class="ov-legend-dot dark"></i>Absent</span>
-          <select id="trendYearSelect" class="ov-card-action" aria-label="Trend academic year" onchange="window.onYearSelectChanged(this.value)">
-            <option value="${esc(activeYear)}">${esc(activeYear)}</option>
-          </select>
-          <button type="button" class="ov-card-action" data-nav-tab="tab-stats">Report</button>
-        </div>
-      </div>
-      <div class="ov-trend-chart">
-        <div class="ov-chart-y" aria-hidden="true"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
-        <div class="ov-chart-plot">${barsHtml}</div>
-      </div>
-      <div class="ov-trend-footer ${footerClass}">
-        <i class="fas ${footerIcon}" aria-hidden="true"></i>
-        <span>${esc(footerMsg)}</span>
       </div>`;
   }
 
@@ -554,11 +452,9 @@
     }
     const priEl = document.getElementById('ovPriorityCard');
     const qaEl = document.getElementById('ovQuickActionsCard');
-    const trEl = document.getElementById('ovTrendCard');
     const scEl = document.getElementById('ovScheduleCard');
     if (priEl) priEl.innerHTML = '';
     if (qaEl) qaEl.innerHTML = '';
-    if (trEl) trEl.innerHTML = '';
     if (scEl) scEl.innerHTML = '';
   }
 
@@ -625,7 +521,6 @@
       renderKpis(data, priorities);
       renderPriorityInbox(priorities);
       renderQuickActions(data);
-      renderAttendanceTrend(data);
       syncYearSelector(data);
       renderSchedule(data);
       bindOverviewNavClicks();
@@ -781,18 +676,23 @@
     const shell = document.getElementById('eyeShell');
     const toggleBtn = document.getElementById('eyeSidebarToggleBtn');
     if (toggleBtn && shell) {
-      if (window.innerWidth > 960 && localStorage.getItem('eye-sidebar-collapsed') !== '0') {
-        shell.classList.add('sidebar-collapsed');
-      }
+      // Desktop: the rail is a 76px icon strip that expands on hover/focus (CSS).
+      // The hamburger only drives the mobile drawer (<=1023px).
       toggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (window.innerWidth <= 960) {
+        if (window.innerWidth <= 1023) {
           shell.classList.toggle('mobile-drawer-open');
-        } else {
-          shell.classList.toggle('sidebar-collapsed');
-          localStorage.setItem('eye-sidebar-collapsed', shell.classList.contains('sidebar-collapsed') ? '1' : '0');
         }
       });
+      const sidebar = document.getElementById('eyeSidebar');
+      if (sidebar) {
+        sidebar.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            const ae = document.activeElement;
+            if (ae && sidebar.contains(ae)) ae.blur();
+          }
+        });
+      }
       document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('eyeSidebar');
         if (shell.classList.contains('mobile-drawer-open') && sidebar && !sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {

@@ -78,7 +78,7 @@ var MENU_CONFIG = {
     {
       id: 'tab-fees-menu',
       label: 'Fees & Accounts',
-      icon: 'fa-money-bill-wave',
+      icon: 'fa-hand-holding-dollar',
       href: '#tab-fees',
       dataSection: 'tab-fees',
       dataFeatureKey: 'fees',
@@ -204,7 +204,7 @@ var MENU_CONFIG = {
     { id: 'tab-teacher-btn', label: 'Teacher', icon: 'fa-chalkboard-user', href: '#tab-teacher', dataSection: 'tab-teacher' },
     { id: 'tab-attendance-btn', label: 'Attendance', icon: 'fa-clipboard-check', href: '#tab-attendance', dataSection: 'tab-attendance' },
     { id: 'tab-homework-btn', label: 'Homework', icon: 'fa-book-open', href: '#tab-homework', dataSection: 'tab-homework' },
-    { id: 'tab-fees-btn', label: 'Fees', icon: 'fa-money-bill-wave', href: '#tab-fees', dataSection: 'tab-fees' },
+    { id: 'tab-fees-btn', label: 'Fees', icon: 'fa-hand-holding-dollar', href: '#tab-fees', dataSection: 'tab-fees' },
     {
       id: 'tab-student-menu',
       label: 'More',
