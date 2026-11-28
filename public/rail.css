@@ -93,3 +93,18 @@
 .eye-sidebar .tab-btn:hover .nav-ico,.eye-sidebar .nav-tab-item:hover>.tab-btn .nav-ico{color:var(--lime,#E6F27A)}
 .eye-sidebar .nav-dropdown-item:hover{background:rgba(201,218,63,.22);color:#fff}
 .eye-sidebar .nav-tab-item.open>.nav-dropdown{visibility:visible !important}
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  .eye-sidebar:not(.rail-open) .tab-btn{width:44px !important;max-width:44px;overflow:hidden}
+  .eye-sidebar:not(.rail-open) .tab-btn span,
+  .eye-sidebar:not(.rail-open) .tab-btn .nav-arrow{display:none !important}
+  .eye-sidebar:not(.rail-open) .tab-btn .nav-ico{margin:0 auto}
+}
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  .eye-sidebar:not(.rail-open) .tab-nav-inner{align-items:center !important}
+  .eye-sidebar:not(.rail-open) .tab-btn{margin:0 !important}
+}
+@media (hover:hover) and (pointer:fine) and (min-width:1024px){
+  .eye-sidebar .tab-nav-inner{flex-direction:column !important;align-items:center !important;width:100%}
+  .eye-sidebar:not(.rail-open) .tab-nav-inner > .tab-btn,
+  .eye-sidebar:not(.rail-open) .nav-tab-item{align-self:center !important;justify-content:center !important}
+}
