@@ -2857,7 +2857,7 @@
             <div style="width:200px; min-width:150px;">
               <select id="studentClassFilter" class="form-input" onchange="stuPage=1; filterStudents()"
                 aria-label="Filter students by class">
-                <option value="">All Classes</option>
+                <option value="">All classes</option>
                 <option value="unassigned">Unassigned</option>
               </select>
             </div>
@@ -2953,50 +2953,43 @@
       <div class="section-card" id="attendanceSection">
         <div class="section-header">
           <div class="section-header-left">
-            <div class="section-icon green"><i class="fas fa-clipboard-list"></i></div>
             <div>
-              <div class="section-title">Attendance Records</div>
-              <div class="section-subtitle">View submitted attendance and absent students</div>
+              <div class="section-title">Records</div>
             </div>
           </div>
         </div>
         <div class="section-body" style="padding:0;">
           <div style="padding: 16px; border-bottom: 1px solid var(--border);">
             <div class="search-filter-container" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-              <div style="flex:1; min-width:240px; position:relative;">
-                <input type="text" id="attendanceSearchInput" class="form-input"
-                  placeholder="Search by student name..." oninput="filterAttendance()">
+              <div style="flex:1; min-width:200px; position:relative;">
+                <input type="text" id="attendanceSearchInput" class="form-input att-search"
+                  placeholder="Search student name" oninput="filterAttendance()">
               </div>
               <select id="attendanceDayFilter" class="form-input" style="max-width:130px;" onchange="onAttendancePeriodChange()">
-                <option value="">All Days</option>
+                <option value="">All days</option>
               </select>
               <select id="attendanceMonthFilter" class="form-input" style="max-width:150px;" onchange="onAttendancePeriodChange()">
-                <option value="">All Months</option>
+                <option value="">All months</option>
               </select>
               <select id="attendanceYearFilter" class="form-input" style="max-width:130px;" onchange="onAttendancePeriodChange()">
-                <option value="">All Years</option>
+                <option value="">All years</option>
               </select>
               <select id="attendanceClassFilter" class="form-input" style="max-width:220px;" onchange="filterAttendance()">
-                <option value="">All Classes</option>
+                <option value="">All classes</option>
               </select>
-              <button class="btn btn-ghost" onclick="exportAttendanceCsv()" title="Export filtered records">
-                <i class="fas fa-file-csv"></i> Export CSV
+              <button class="btn btn-ghost att-export" onclick="exportAttendanceCsv()" title="Export filtered records">
+                <i class="fas fa-download"></i> Export CSV
               </button>
+              <button type="button" class="att-clear" id="attClearFilters" onclick="clearAttendanceFilters()" style="display:none;">Clear filters</button>
             </div>
             <!-- Status filter pills -->
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;" id="attendanceStatusFilters">
-              <button type="button" onclick="setAttendanceStatusFilter('')" id="attSF-all" class="btn btn-filter filter-all active" aria-pressed="true">
-                All
-              </button>
-              <button type="button" onclick="setAttendanceStatusFilter('Present')" id="attSF-Present" class="btn btn-filter filter-present" aria-pressed="false">
-                ✅ Present
-              </button>
-              <button type="button" onclick="setAttendanceStatusFilter('Absent')" id="attSF-Absent" class="btn btn-filter filter-absent" aria-pressed="false">
-                ❌ Absent
-              </button>
-              <button type="button" onclick="setAttendanceStatusFilter('Leave')" id="attSF-Leave" class="btn btn-filter filter-leave" aria-pressed="false">
-                📝 Leave
-              </button>
+              <div class="att-status-row">
+                <button type="button" onclick="setAttendanceStatusFilter('')" id="attSF-all" class="att-pill active" aria-pressed="true">All</button>
+                <button type="button" onclick="setAttendanceStatusFilter('Present')" id="attSF-Present" class="att-pill" aria-pressed="false"><i class="att-dot present"></i>Present</button>
+                <button type="button" onclick="setAttendanceStatusFilter('Absent')" id="attSF-Absent" class="att-pill" aria-pressed="false"><i class="att-dot absent"></i>Absent</button>
+                <button type="button" onclick="setAttendanceStatusFilter('Leave')" id="attSF-Leave" class="att-pill" aria-pressed="false"><i class="att-dot leave"></i>Leave</button>
+              </div>
             </div>
           </div>
           <div id="attendanceTableWrap">
@@ -3203,7 +3196,7 @@
               <div class="form-group" style="flex:0 1 220px; min-width:180px; margin-bottom:0;">
                 <label class="form-label" for="feeCollectClassFilter">Class</label>
                 <select id="feeCollectClassFilter" class="form-input" onchange="renderFeeCollect()">
-                  <option value="">All Classes</option>
+                  <option value="">All classes</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1 1 220px; min-width:180px; margin-bottom:0;">
@@ -3264,7 +3257,7 @@
               <div class="form-group" style="flex:0 1 180px; min-width:150px; margin-bottom:0;">
                 <label class="form-label" for="feePendingClassFilter">Class</label>
                 <select id="feePendingClassFilter" class="form-input" onchange="renderFeePending()">
-                  <option value="">All Classes</option>
+                  <option value="">All classes</option>
                 </select>
               </div>
               <div class="form-group" style="flex:0 1 170px; min-width:140px; margin-bottom:0;">
@@ -3328,7 +3321,7 @@
             <div class="fees-filter-row" style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end;">
               <div class="form-group" style="flex:0 1 170px; min-width:150px; margin-bottom:0;">
                 <label class="form-label" for="feeCfgClassFilter">Class</label>
-                <select id="feeCfgClassFilter" class="form-input" onchange="onFeeCfgClassChange()"><option value="">All Classes</option></select>
+                <select id="feeCfgClassFilter" class="form-input" onchange="onFeeCfgClassChange()"><option value="">All classes</option></select>
               </div>
               <div class="form-group" style="flex:0 1 170px; min-width:150px; margin-bottom:0;">
                 <label class="form-label" for="feeCfgStudentFilter">Student</label>
@@ -4463,7 +4456,7 @@
         const sel = document.getElementById(id);
         if (!sel) return;
         const keep = sel.value;
-        sel.innerHTML = '<option value="">All Classes</option>';
+        sel.innerHTML = '<option value="">All classes</option>';
         window.feeCenter.classes.forEach(cls => {
           const opt = document.createElement('option');
           opt.value = cls.id;
@@ -4479,7 +4472,7 @@
       const yearSel = document.getElementById('feePendingYearFilter');
       if (monthSel) {
         const keepM = monthSel.value;
-        monthSel.innerHTML = '<option value="">All Months</option>';
+        monthSel.innerHTML = '<option value="">All months</option>';
         VG().MONTHS.forEach(m => {
           const opt = document.createElement('option');
           opt.value = m;
@@ -4491,7 +4484,7 @@
       if (yearSel) {
         const keepY = yearSel.value;
         const years = [...new Set(window.feeCenter.vouchers.map(v => String(v.year)))].sort().reverse();
-        yearSel.innerHTML = '<option value="">All Years</option>' +
+        yearSel.innerHTML = '<option value="">All years</option>' +
           years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
         if (keepY && [...yearSel.options].some(o => o.value === keepY)) yearSel.value = keepY;
       }
@@ -5282,7 +5275,7 @@
           date: dateStr || '',
           month: dateStr ? dateStr.slice(0, 7) : '',
           status: row.status || '',
-          markedBy: row.marked_by || (assignedTeacher ? assignedTeacher.name : 'Unknown'),
+          markedBy: row.marked_by || (assignedTeacher ? assignedTeacher.name : ''),
           markedById: row.marked_by_id || (assignedTeacher ? assignedTeacher.id : ''),
           createdAt: row.created_at || ''
         };
@@ -6196,7 +6189,7 @@
       const currentValue = classFilter.value;
 
       // Rebuild options
-      classFilter.innerHTML = '<option value="">All Classes</option><option value="unassigned">Unassigned</option>';
+      classFilter.innerHTML = '<option value="">All classes</option><option value="unassigned">Unassigned</option>';
 
       // Add classes from system
       (window.appData.classes || []).forEach(cls => {
@@ -6667,7 +6660,7 @@
       const baseYear = Number(thisYear);
       for (let i = 1; i <= 3; i++) years.add(String(baseYear - i));
 
-      yearSel.innerHTML = '<option value="">All Years</option>';
+      yearSel.innerHTML = '<option value="">All years</option>';
       [...years].sort((a, b) => b - a).forEach(y => {
         const o = document.createElement('option');
         o.value = y;
@@ -6675,7 +6668,7 @@
         yearSel.appendChild(o);
       });
 
-      monthSel.innerHTML = '<option value="">All Months</option>';
+      monthSel.innerHTML = '<option value="">All months</option>';
       ATTENDANCE_MONTH_NAMES.forEach((name, i) => {
         const value = String(i + 1).padStart(2, '0');
         const o = document.createElement('option');
@@ -6684,7 +6677,7 @@
         monthSel.appendChild(o);
       });
 
-      daySel.innerHTML = '<option value="">All Days</option>';
+      daySel.innerHTML = '<option value="">All days</option>';
       for (let d = 1; d <= 31; d++) {
         const value = String(d).padStart(2, '0');
         // Hide days that cannot exist in the selected month (e.g. 31 in February).
@@ -6785,58 +6778,65 @@
       }
 
       const distinctStudents = new Set(records.map(r => r.studentId ?? r.studentName)).size;
+      const attMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fmtAttDate = iso => {
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+        return m ? `${+m[3]} ${attMonths[+m[2]-1]} ${m[1]}` : (iso || '-');
+      };
+      const attInitials = name => String(name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const showMarkedBy = records.some(r => r.markedBy);
+      const attClassLabel = r => [r.className, r.classSection].filter(Boolean).join(' \u00b7 ');
 
       let html = `
-        <div style="padding:12px 18px; color:var(--text-secondary); font-size:0.82rem; border-bottom:1px solid var(--border);">
-          Showing <strong style="color:var(--text);">${distinctStudents}</strong> student${distinctStudents === 1 ? '' : 's'}
-          &middot; <strong style="color:var(--text);">${records.length}</strong> attendance record${records.length === 1 ? '' : 's'}
-        </div>
-        <div style="overflow-x:auto;">
-        <table class="data-table">
+        <div class="att-summary">${distinctStudents.toLocaleString()} student${distinctStudents === 1 ? '' : 's'} &middot; ${records.length.toLocaleString()} record${records.length === 1 ? '' : 's'}</div>
+        <div class="att-table-wrap">
+        <table class="att-table">
           <thead>
             <tr>
-              <th style="text-align:left;">Student Name</th>
-              <th style="text-align:center; width:130px;">Class</th>
-              <th style="text-align:center; width:130px;">Date</th>
-              <th style="text-align:center; width:120px;">Status</th>
-              <th style="text-align:left;">Marked By</th>
+              <th class="att-th-left">Student</th>
+              <th>Class</th>
+              <th>Date</th>
+              <th>Status</th>
+              ${showMarkedBy ? '<th>Marked by</th>' : ''}
             </tr>
           </thead>
           <tbody>`;
 
       records.forEach(record => {
-        const status = record.status || '';
-        const statusLower = status.toLowerCase();
-        let rowBg = 'transparent';
-        let badgeClass = '';
-        if (statusLower === 'present') {
-          rowBg = 'rgba(34,197,94,0.08)';
-          badgeClass = 'present';
-        } else if (statusLower === 'absent') {
-          rowBg = 'rgba(239,68,68,0.08)';
-          badgeClass = 'absent';
-        } else if (statusLower === 'leave') {
-          rowBg = 'rgba(245,158,11,0.10)';
-        }
-
+        const status = (record.status || '').toLowerCase();
+        const chip = status === 'present' ? 'present' : status === 'absent' ? 'absent' : status === 'leave' ? 'leave' : 'other';
         html += `
-          <tr style="background:${rowBg};">
-            <td style="text-align:left; font-weight:700;">
-              ${escapeHtml(record.studentName)}
-              ${record.rollNo ? `<div style="font-size:0.72rem; color:var(--text-secondary); font-weight:500;">Roll No: ${escapeHtml(record.rollNo)}</div>` : ''}
+          <tr>
+            <td class="att-td-left">
+              <span class="att-avatar">${escapeHtml(attInitials(record.studentName))}</span>
+              <span class="att-student">${escapeHtml(record.studentName)}
+                ${record.rollNo ? `<span class="att-roll">Roll ${escapeHtml(record.rollNo)}</span>` : ''}
+              </span>
             </td>
-            <td style="text-align:center;">
-              <span class="badge" style="background:var(--badge-bg); color:var(--badge-text);">${escapeHtml(record.className || '-')}</span>
-              ${record.classSection ? `<span class="badge" style="background:rgba(99,102,241,0.12); color:var(--primary-light); font-size:0.65rem; margin-left:4px;">${escapeHtml(record.classSection)}</span>` : ''}
-            </td>
-            <td style="text-align:center; color:var(--text-secondary); font-weight:600;">${escapeHtml(record.date || '-')}</td>
-            <td style="text-align:center;"><span class="badge ${badgeClass}" style="${statusLower === 'leave' ? 'background:rgba(245,158,11,0.14); color:#b45309;' : ''}">${escapeHtml(status || '-')}</span></td>
-            <td style="text-align:left; color:var(--text-secondary);">${escapeHtml(record.markedBy || 'Unknown')}</td>
+            <td><span class="att-class-chip">${escapeHtml(attClassLabel(record) || '-')}</span></td>
+            <td class="att-date">${escapeHtml(fmtAttDate(record.date))}</td>
+            <td><span class="att-chip ${chip}"><i></i>${escapeHtml(record.status || '-')}</span></td>
+            ${showMarkedBy ? `<td class="att-marked">${escapeHtml(record.markedBy || '-')}</td>` : ''}
           </tr>`;
       });
 
       html += '</tbody></table></div>';
       wrap.innerHTML = html;
+      const cf = document.getElementById('attClearFilters');
+      if (cf) {
+        const anyFilter = document.getElementById('attendanceSearchInput')?.value
+          || document.getElementById('attendanceDayFilter')?.value
+          || document.getElementById('attendanceMonthFilter')?.value
+          || document.getElementById('attendanceYearFilter')?.value
+          || document.getElementById('attendanceClassFilter')?.value
+          || attendanceStatusFilter;
+        cf.style.display = anyFilter ? 'inline-block' : 'none';
+      }
+    }
+
+    function clearAttendanceFilters() {
+      ['attendanceSearchInput','attendanceDayFilter','attendanceMonthFilter','attendanceYearFilter','attendanceClassFilter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      setAttendanceStatusFilter('');
     }
 
     function escapeCsvValue(value) {
@@ -8247,19 +8247,19 @@
         const attendanceClassFilter = document.getElementById('attendanceClassFilter');
         const attendanceVal = attendanceClassFilter ? attendanceClassFilter.value : '';
         if (attendanceClassFilter) {
-          attendanceClassFilter.innerHTML = '<option value="">All Classes</option>';
+          attendanceClassFilter.innerHTML = '<option value="">All classes</option>';
         }
 
         const statsClassSelect = document.getElementById('statsClassSelect');
         const statsVal = statsClassSelect ? statsClassSelect.value : '';
         if (statsClassSelect) {
-          statsClassSelect.innerHTML = '<option value="">All Classes</option>';
+          statsClassSelect.innerHTML = '<option value="">All classes</option>';
         }
 
         const feeClassFilter = document.getElementById('feeClassFilter');
         const feeClassVal = feeClassFilter ? feeClassFilter.value : '';
         if (feeClassFilter) {
-          feeClassFilter.innerHTML = '<option value="">All Classes</option>';
+          feeClassFilter.innerHTML = '<option value="">All classes</option>';
         }
 
         classes.forEach(cls => {
@@ -9828,7 +9828,7 @@
         const sel = document.getElementById(id);
         if (!sel) return;
         const keep = sel.value;
-        sel.innerHTML = '<option value="">All Classes</option>' +
+        sel.innerHTML = '<option value="">All classes</option>' +
           FMG().classes.map(c => `<option value="${c.id}">${escapeHtml(feeClsLabel(c))}</option>`).join('');
         if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep;
       });
