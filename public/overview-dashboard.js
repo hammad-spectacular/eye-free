@@ -435,18 +435,41 @@
     }
 
     const todayIso = new Date().toISOString().slice(0, 10);
-    const barsHtml = trend.map((d, idx) => {
-      const isToday = d.date === todayIso || (idx === trend.length - 1 && markedToday);
-      const heightPct = Math.max(12, Math.min(100, d.pct));
-      const shortDate = shortDateLabel(d.date);
-      return `
-        <div class="ov-bar-col ${isToday ? 'today' : ''}" title="${esc(d.date)}: ${d.present}/${d.total} present (${d.pct}%)">
-          <div class="ov-bar-pct">${d.pct}%</div>
-          <div class="ov-bar-track">
-            <div class="ov-bar-fill" style="height:${heightPct}%"></div>
-          </div>
-          <div class="ov-bar-day">${esc(shortDate || d.day)}</div>
+    const trendByDate = {};
+    trend.forEach(d => { trendByDate[d.date] = d; });
+
+    // Last 8 calendar days ending today. Days without attendance records
+    // render as dashed ghost pills — no invented data.
+    const days = [];
+    const cursor = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const dt = new Date(cursor);
+      dt.setDate(dt.getDate() - i);
+      const isoD = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+      days.push({ iso: isoD, d: trendByDate[isoD] || null });
+    }
+
+    const barsHtml = days.map((day, idx) => {
+      const isToday = day.iso === todayIso || (!trendByDate[todayIso] && idx === days.length - 1 && markedToday);
+      const lbl = shortDateLabel(day.iso) || day.iso;
+      if (!day.d) {
+        return `
+        <div class="ov-day ov-day-ghost" aria-hidden="true">
+          <span class="ov-day-pill ghost"><i class="ov-ghost-dot"></i></span>
+          <span class="ov-day-label">${esc(lbl)}</span>
         </div>`;
+      }
+      const pct = Math.max(0, Math.min(100, Number(day.d.pct) || 0));
+      return `
+        <button type="button" class="ov-day ${isToday ? 'today' : ''}" aria-label="${esc(day.iso)}: ${day.d.pct}% present">
+          <span class="ov-day-bubble">${esc(String(day.d.pct))}%</span>
+          <span class="ov-day-pill">
+            <span class="ov-day-fill" style="height:${pct}%"></span>
+            <i class="ov-dot-lime" style="bottom:${pct}%" aria-hidden="true"></i>
+            <i class="ov-dot-top" aria-hidden="true"></i>
+          </span>
+          <span class="ov-day-label">${esc(lbl)}</span>
+        </button>`;
     }).join('');
 
     let footerClass = 'neutral';
@@ -467,14 +490,18 @@
     el.innerHTML = `
       <div class="ov-card-head">
         <div class="ov-card-title">Attendance trend</div>
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="ov-legend"><i class="ov-legend-dot lime"></i>Present<i class="ov-legend-dot dark"></i>Absent</span>
           <select id="trendYearSelect" class="ov-card-action" aria-label="Trend academic year" onchange="window.onYearSelectChanged(this.value)">
             <option value="${esc(activeYear)}">${esc(activeYear)}</option>
           </select>
           <button type="button" class="ov-card-action" data-nav-tab="tab-stats">Report</button>
         </div>
       </div>
-      <div class="ov-trend-bars">${barsHtml}</div>
+      <div class="ov-trend-chart">
+        <div class="ov-chart-y" aria-hidden="true"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
+        <div class="ov-chart-plot">${barsHtml}</div>
+      </div>
       <div class="ov-trend-footer ${footerClass}">
         <i class="fas ${footerIcon}" aria-hidden="true"></i>
         <span>${esc(footerMsg)}</span>

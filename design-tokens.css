@@ -6,7 +6,7 @@
 :root {
   /* Core Palette */
   --bg-app: #F1F2EE;         /* page canvas */
-  --surface: #E7EAE3;        /* sage-gray secondary cards */
+  --surface: #E4E8E1;        /* sage secondary cards */
   --surface-white: #FFFFFF;  /* list rows, inputs, table rows */
   --ink: #111111;            /* primary text, dark cards, primary buttons */
   --ink-2: #5C5C57;          /* secondary text */
@@ -114,6 +114,11 @@
   --glow-lime: rgba(230, 242, 122, 0.2);
   --glass: rgba(255, 255, 255, 0.06);
   --glass-border: rgba(255, 255, 255, 0.14);
+
+  /* App frame: white window + off-white rounded panel */
+  --bg-frame: #FFFFFF;
+  --bg-panel: #EEF0EC;
+  --line-soft: #D5D9D0;
 }
 
 /* Global Reset & Accessibility */

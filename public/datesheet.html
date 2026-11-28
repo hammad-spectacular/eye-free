@@ -4,31 +4,43 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Date sheet maker</title>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./shared-nav.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{color-scheme:light;--bg:#f2f5f8;--card:#fff;--ink:#14213d;--mute:#5b6678;--line:#d5dce6;--acc:#0f766e;--accfg:#fff;--easy:#2f7d3b;--med:#a86400;--hard:#b42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{color-scheme:light;--bg-frame:#FFFFFF;--bg-panel:#EEF0EC;--card:#FFFFFF;--surface:#E4E8E1;--ink:#111111;--mute:#5C5C57;--line:#D5D9D0;--line-soft:#E2E2DC;--acc:#111111;--accfg:#FFFFFF;--lime:#E6F27A;--easy:#2f7d3b;--med:#a86400;--hard:#b42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Hanken Grotesk",system-ui,sans-serif}
-main{max-width:860px;margin:0 auto;padding:28px 16px 60px}
-h1{font-size:2rem;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
-.sub{color:var(--mute);margin:0 0 24px}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
-h2{font-size:1.05rem;margin:0 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
-input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.days{display:flex;flex-wrap:wrap;gap:8px 14px}
-.days label{display:flex;align-items:center;gap:6px;color:var(--ink);margin:0}
-.days input{width:auto}
+body{margin:0;background:var(--bg-frame);color:var(--ink);font:16px/1.5 'Inter',system-ui,sans-serif}
+.ds-shell{display:flex;gap:12px;margin:12px;min-height:calc(100dvh - 24px);background:var(--bg-panel);border-radius:32px;padding:12px}
+.ds-rail{width:232px;flex-shrink:0;background:#111111;border-radius:28px;display:flex;flex-direction:column;padding:20px 16px;gap:16px}
+.ds-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}
+.ds-brand .mk{width:36px;height:36px;border-radius:10px;background:var(--rail-active,#1E1E1D);color:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.ds-brand b{font-size:14px;font-weight:600;display:block;line-height:1.2}
+.ds-brand span{font-size:11px;color:#9A9A94}
+.ds-back{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:500;font-size:14px;text-decoration:none;cursor:pointer;font-family:inherit;margin-top:auto}
+.ds-back:hover{border-color:var(--ink)}
+.ds-main{flex:1;min-width:0;overflow-y:auto;padding:8px 4px 90px}
+main{max-width:960px;margin:0 auto;padding:8px 16px 60px}
+h1{font-size:1.75rem;font-weight:600;margin:0;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:4px 0 20px;font-size:15px}
+section{background:var(--card);border:1px solid var(--line-soft);border-radius:24px;padding:24px;margin-bottom:16px}
+h2{font-size:1.05rem;font-weight:600;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+input,select{width:100%;height:48px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:inherit;font-size:16px}
+input[type=checkbox]{width:auto;height:auto}
+input[type=date],input[type=time]{height:48px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--lime);outline-offset:1px;border-color:#111}
+.days{display:flex;flex-wrap:wrap;gap:8px}
+.days label{display:inline-flex;align-items:center;margin:0;padding:0 16px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:14px;transition:all .15s}
+.days label:has(input:checked){background:var(--ink);color:#fff;border-color:var(--ink)}
+.days input{position:absolute;opacity:0;pointer-events:none}
 .row{display:grid;grid-template-columns:2fr 1.1fr 1.3fr auto;gap:8px;margin-bottom:8px;align-items:center}
 .row.head{font-size:.8rem;color:var(--mute);margin-bottom:4px}
-button{font:inherit;border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
-button.primary{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
+button{font:inherit;border-radius:999px;padding:10px 18px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;min-height:44px}
+button.primary,.primary{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
 button:disabled{opacity:.45;cursor:not-allowed}
-.x{padding:6px 10px}
+.x{padding:6px 14px}
 .note{color:var(--mute);font-size:.85rem;margin:8px 0 0}
 #msg{color:var(--hard);margin:8px 0;font-weight:600}
 .wrap{overflow-x:auto}
@@ -36,54 +48,76 @@ table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
 th{font-size:.85rem;color:var(--mute);font-weight:600}
 .tag{font-weight:600}.Easy{color:var(--easy)}.Medium{color:var(--med)}.Hard{color:var(--hard)}
-.title{font-size:1.2rem;font-weight:800;margin:0 0 2px}
-.warn-box{margin:0 0 8px;padding:10px 14px;border-radius:6px;font-weight:600;font-size:.9rem}
-.warn-box.hard{color:var(--hard);background:#fff5f5;border:1px solid #fecaca}
-.warn-box.soft{color:var(--med);background:#fffbeb;border:1px solid #fde68a}
+.title{font-size:1.2rem;font-weight:700;margin:0 0 2px}
+.warn-box{margin:0 0 8px;padding:10px 14px;border-radius:14px;font-weight:600;font-size:.9rem}
+.warn-box.hard{color:var(--hard);background:#FDF0EF;border:1px solid #F3C1BC}
+.warn-box.soft{color:var(--med);background:#FBF6E9;border:1px solid #EBD9A8}
 .warn-box ul{margin:4px 0 0;padding-left:18px}
-.warn-box li{margin-bottom:2px}
-td input[type=date]{padding:5px 6px;min-width:140px}.bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-@media (max-width:620px){.row{grid-template-columns:1fr 1fr}.row.head{display:none}}
-@media print{td input{border:none;background:none;color:#000;padding:0}.warn-box{display:none}body{background:#fff;color:#000}.noprint{display:none}section{border:none;padding:0}.Easy,.Medium,.Hard{color:#000}}
-.card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
-.ch{display:grid;grid-template-columns:auto 1.4fr 1.4fr;gap:8px;align-items:center;margin-bottom:8px}
-.ch input[type=checkbox],.sel input{width:auto}
+td input[type=date]{padding:5px 6px;min-width:140px}
+.bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.card{border:1px solid var(--line-soft);border-radius:16px;padding:14px;margin-bottom:10px;background:#fff}
+.ch{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:8px}
+.ch input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink)}
+.sel{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:14px}
+.sel input{width:18px;height:18px;accent-color:var(--ink)}
+.sel.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .sr{display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1.2fr;gap:6px;margin-bottom:6px}
+.sr input,.sr select{height:44px;font-size:14px;padding:0 10px}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.tabs button[aria-pressed=true]{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.tabs button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .badge{font-size:.8rem;color:var(--mute);margin-left:4px}
 #access-denied{display:none;padding:40px 20px;text-align:center;color:var(--hard);font-weight:600;font-size:1.1rem}
-@media (max-width:620px){.ch,.sr{grid-template-columns:1fr 1fr}}
-@media print{.noprint{display:none}}
+.hol-row{display:flex;gap:8px;margin-top:10px}
+.hol-row input{flex:1}
+.hol-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.hol-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 6px 0 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px}
+.hol-chip button{width:22px;height:22px;min-height:0;padding:0;border:none;background:transparent;color:#fff;font-size:14px;border-radius:999px}
+.hol-chip button:hover{background:rgba(255,255,255,.15)}
+.ds-actionbar{position:sticky;bottom:12px;display:flex;align-items:center;gap:12px;margin-top:8px;padding:16px;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border:1px solid var(--line-soft);border-radius:20px}
+.ds-actionbar .cnt{font-size:13px;color:var(--mute)}
+.ds-actionbar button.primary{margin-left:auto}
+@media (max-width:1100px){.ds-rail{display:none}}
+@media (max-width:620px){.row{grid-template-columns:1fr 1fr}.row.head{display:none}.ch,.sr{grid-template-columns:1fr 1fr}.ds-shell{margin:8px;border-radius:24px;min-height:calc(100dvh - 16px)}}
+@media print{td input{border:none;background:none;color:#000;padding:0}.warn-box,.ds-actionbar,.noprint{display:none}body{background:#fff;color:#000}.Easy,.Medium,.Hard{color:#000}.ds-shell{margin:0;border-radius:0}.ds-rail{display:none}.ds-main{overflow:visible}}
 </style>
 </head>
 <body>
-<div id="navContainer"></div>
+<div class="ds-shell">
+<aside class="ds-rail" aria-label="School navigation">
+  <a href="/admin.html" class="ds-brand"><span class="mk">TE</span><span><b>The Eye</b><span>School Management</span></span></a>
+  <button type="button" class="ds-back" id="backBtn"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back</button>
+</aside>
+<div class="ds-main">
 <div id="access-denied">Access denied. Admins only.</div>
 <main id="main-content">
 <div class="noprint">
-<h1>Date sheet maker</h1>
-<p class="sub">Pick one, several or all classes. Each class keeps its own subjects.</p>
-<section><h2>1. Exam details</h2><div class="grid">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+<button type="button" class="ds-back" id="backBtn2" style="margin:0"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back</button>
+</div>
+<h1>Date sheet</h1>
+<p class="sub">Choose classes and dates. We'll plan the rest.</p>
+<section><h2>Exam</h2><div class="grid">
 <div><label for="title">Exam title</label><input id="title" value="Mid-term Examination"></div>
 <div><label for="start">First exam date</label><input id="start" type="date"></div>
 <div><label for="end">Last possible date</label><input id="end" type="date"></div></div></section>
-<section><h2>2. Which days are off?</h2><div class="days" id="off"></div>
-<p class="note">Add holidays as dates separated by commas (YYYY-MM-DD).</p>
-<input id="hol" placeholder="2026-12-25, 2026-12-26" style="margin-top:8px"></section>
-<section><h2>3. Papers per day and timing</h2><div class="grid">
+<section><h2>Days off</h2><div class="days" id="off"></div>
+<p class="note">Holidays:</p>
+<div class="hol-row"><input id="holDate" type="date"><button type="button" id="addHoliday">Add holiday</button></div>
+<div class="hol-chips" id="holChips"></div>
+<input id="hol" type="hidden"></section>
+<section><h2>Timing</h2><div class="grid">
 <div><label for="per">Papers per day (per class)</label><select id="per"><option>1</option><option>2</option><option>3</option></select></div>
 <div><label for="t1">First paper starts</label><input id="t1" type="time" value="09:00"></div>
 <div><label for="dur">Paper length (hours)</label><input id="dur" type="number" min="1" max="6" step="0.5" value="3"></div>
 <div><label for="lat">Latest finish time</label><input id="lat" type="time" value="17:00"></div>
 <div><label for="order">Paper order</label><select id="order"><option value="spread">Hard papers first, spread apart with gap days</option><option value="easy">Easy to hard</option><option value="hard">Hard to easy</option></select></div></div></section>
-<section><h2>4. Classes and subjects</h2>
-<label class="sel" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" id="all"> Select all classes</label>
+<section><h2>Classes</h2>
+<label class="sel" id="allWrap"><input type="checkbox" id="all"> Select all <span class="badge" id="selCount"></span></label>
 <div id="classes" style="margin-top:10px"></div>
 <p class="note" id="classes-loading">Loading classes from database...</p>
-<p class="note">Tick the classes to include. Teachers and rooms are used to avoid clashes between classes.</p></section>
+<p class="note">Tick the classes to include. Teachers and rooms are used to avoid clashes.</p></section>
 <div id="msg" role="alert"></div>
-<button class="primary" id="go">Make date sheet</button>
+<div class="ds-actionbar"><span class="cnt" id="selCountBar"></span><button class="primary" id="go">Make date sheet</button></div>
 </div>
 <section id="out" hidden>
 <div class="tabs noprint" id="tabs"></div>
@@ -166,9 +200,9 @@ function renderClasses(){
  var box=$('classes');box.innerHTML='';
  if(!CL.length){box.innerHTML='<p class="note">No classes found.</p>';return}
  CL.forEach(function(c){var card=h('div',{class:'card'});
-  var cb=h('input',{type:'checkbox','aria-label':'Include class'});cb.checked=!!c.sel;cb.onchange=function(){c.sel=cb.checked};
+  var cb=h('input',{type:'checkbox','aria-label':'Include class'});cb.checked=!!c.sel;cb.onchange=function(){c.sel=cb.checked;renderClasses()};
   var nameSpan=document.createElement('span');nameSpan.textContent=c.name;nameSpan.style.fontWeight='600';
-  card.append(h('div',{class:'ch'},[cb,nameSpan,bind(h('input',{placeholder:'Exam room','aria-label':'Exam room'}),c,'room')]));
+  card.append(h('div',{class:'ch'},[cb,nameSpan,c.sel?bind(h('input',{placeholder:'Exam room (optional)','aria-label':'Exam room'}),c,'room'):h('span',{class:'note'},[' '])]));
   c.subs.forEach(function(s){
    var sl=h('select',{'aria-label':'Difficulty'},['Easy','Medium','Hard'].map(function(v){var o=h('option',{},[v]);if(v===s.l)o.selected=true;return o}));
    var sel=bind(sl,s,'l');var ft=h('input',{type:'date','aria-label':'Fixed date'});
@@ -303,6 +337,24 @@ $('end').value=iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()
   });
 })();
 </script>
+<script>
+(function(){
+ var dirty=false;
+ document.getElementById('main-content').addEventListener('input',function(){dirty=true});
+ function goBack(){if(dirty&&!confirm('Discard your changes and go back?'))return;history.length>1?history.back():location.href='/admin.html'}
+ ['backBtn','backBtn2'].forEach(function(id){var b=document.getElementById(id);if(b)b.onclick=goBack});
+ var holArr=[],holInput=document.getElementById('hol'),chips=document.getElementById('holChips'),holDate=document.getElementById('holDate');
+ function syncHol(){holInput.value=holArr.join(', ')}
+ function renderChips(){chips.innerHTML='';holArr.forEach(function(d){var c=document.createElement('span');c.className='hol-chip';c.appendChild(document.createTextNode(d+' '));var x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Remove '+d);x.onclick=function(){holArr=holArr.filter(function(v){return v!==d});syncHol();renderChips()};c.appendChild(x);chips.appendChild(c)})}
+ document.getElementById('addHoliday').onclick=function(){var v=holDate.value;if(!v)return;if(holArr.indexOf(v)<0){holArr.push(v);holArr.sort();syncHol();renderChips()}holDate.value=''};
+ var allCb=document.getElementById('all');
+ function updCount(){var n=CL.filter(function(c){return c.sel}).length,t=CL.length;['selCount','selCountBar'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=n+' of '+t+' selected'});var w=document.getElementById('allWrap');if(w)w.classList.toggle('on',allCb.checked)}
+ var _rc=renderClasses;renderClasses=function(){_rc();updCount()};
+ allCb.addEventListener('change',updCount);
+ var tries=0,iv=setInterval(function(){updCount();if(CL.length||++tries>60)clearInterval(iv)},250);
+})();
+</script>
+</div></div>
 </body>
 </html>
 
