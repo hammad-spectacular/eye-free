@@ -59,8 +59,9 @@
 .eye-profile-menu-item i{width:16px;text-align:center;color:#5C5C57}
 /* desktop hover-expand (JS adds .rail-open) */
 @media (hover:hover) and (pointer:fine) and (min-width:1024px){
-  .eye-sidebar{transition:width .2s cubic-bezier(.4,0,.2,1)}
-  .eye-sidebar.rail-open{width:264px;position:fixed;left:12px;top:24px;bottom:24px;height:auto;z-index:950;box-shadow:0 18px 50px rgba(17,17,17,.18)}
+  .eye-sidebar{position:fixed;left:24px;top:24px;bottom:24px;width:76px;height:auto;transition:width .2s cubic-bezier(.4,0,.2,1)}
+  .vg-main,.finance-body,.ds-main,.fees-body{margin-left:88px}
+  .eye-sidebar.rail-open{width:264px;z-index:950;box-shadow:0 18px 50px rgba(17,17,17,.18)}
   .eye-sidebar.rail-open .eye-brand-text,
   .eye-sidebar.rail-open .tab-btn span,
   .eye-sidebar.rail-open .nav-arrow{opacity:1}
