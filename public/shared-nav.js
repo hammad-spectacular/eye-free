@@ -7,6 +7,33 @@
 (function () {
   'use strict';
 
+
+  // Inline SVG icons for the rail — font-independent, always visible.
+  var NAV_ICONS = {
+    'fa-house': '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/>',
+    'fa-user-graduate': '<path d="M2 9.5 12 4l10 5.5-10 5.5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9.5V15"/>',
+    'fa-book-open': '<path d="M2 5.5C4 4 7 3.5 12 3.5S20 4 22 5.5V19c-2-1.5-5-2-10-2s-8 .5-10 2z"/><path d="M12 3.5v14"/>',
+    'fa-clipboard-check': '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5a3 3 0 0 1 6 0"/><path d="m9 13.5 2 2 4-4.5"/>',
+    'fa-hand-holding-dollar': '<circle cx="14" cy="6.5" r="4.5"/><path d="M14 3.8v5.4M15.6 5.3c-.3-.6-.9-.9-1.6-.9-.9 0-1.6.5-1.6 1.2 0 1.6 3.4.8 3.4 2.4 0 .7-.7 1.2-1.8 1.2-.8 0-1.4-.3-1.8-.9"/><path d="M2 14l4-1.2 1.8 5.6-4 1.2z"/><path d="M8 13.4l3-.6c.9-.2 1.7 0 2.4.5l1.3.9 5.6-.5c1 0 1.5 1.2.7 1.8l-.9.7-5.2 1.9c-.6.2-1.3.2-1.9 0L8.6 17z"/>',
+    'fa-users': '<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.5c2 .7 3.2 2.4 3.5 4.5"/>',
+    'fa-calendar-check': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="m9.5 15.5 1.8 1.8 3.4-3.6"/>',
+    'fa-circle-exclamation': '<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.5"/>',
+    'fa-building': '<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/><path d="M10 21v-3h4v3"/>',
+    'fa-chart-bar': '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    'fa-bullhorn': '<path d="M3 10v4l4 .5V9.5z"/><path d="M7 9.5 18 5v14l-11-4.5"/><path d="M18 10a3 3 0 0 1 0 4"/>',
+    'fa-ellipsis': '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+    'fa-clock-rotate-left': '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/>',
+    'fa-book': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+    'fa-user': '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+    'fa-chevron-down': '<path d="m6 9 6 6 6-6"/>'
+  };
+  function navIcon(iconClass) {
+    var name = String(iconClass || '').replace(/^fa(s|r|b|solid|regular|brands)?-?/, 'fa-');
+    var inner = NAV_ICONS[iconClass] || NAV_ICONS[name];
+    if (!inner) return '<i class="fas ' + iconClass + '"></i>';
+    return '<svg class="nav-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+
   function initSharedNav(role) {
     const container = document.getElementById('tabNavInner');
     if (!container) return;
@@ -34,9 +61,9 @@
         html += `
           <div class="nav-tab-item" id="${item.id}">
             <button type="button" class="tab-btn" aria-haspopup="true" aria-expanded="false" aria-controls="${item.id}-menu" ${secAttr} ${activeSectionsAttr} ${featAttr} ${tipAttr}>
-              ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
+              ${item.icon ? navIcon(item.icon) : ''}
               <span>${item.label}</span>
-              <i class="fas fa-chevron-down nav-arrow" aria-hidden="true"></i>
+              ${navIcon('fa-chevron-down').replace('class="nav-ico"', 'class="nav-ico nav-arrow')}
             </button>
             <div class="nav-dropdown" id="${item.id}-menu" role="menu">
               <div class="nav-dropdown-inner">
@@ -76,14 +103,14 @@
         if (item.action && !item.href) {
           html += `
             <button type="button" class="tab-btn ${clsActive}" ${idAttr} ${actAttr} ${secAttr} ${featAttr} ${optStyle} ${tipAttr}>
-              ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
+              ${item.icon ? navIcon(item.icon) : ''}
               <span>${item.label}</span>
             </button>
           `;
         } else if (item.href) {
           html += `
             <a href="${item.href}" class="tab-btn ${clsActive}" ${idAttr} ${actAttr} ${secAttr} ${featAttr} ${optStyle} ${tipAttr}>
-              ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
+              ${item.icon ? navIcon(item.icon) : ''}
               <span>${item.label}</span>
             </a>
           `;
@@ -91,7 +118,7 @@
           // For dropdown items with actions
           html += `
             <button type="button" class="tab-btn ${clsActive}" ${idAttr} ${actAttr} ${secAttr} ${featAttr} ${optStyle} ${tipAttr}>
-              ${item.icon ? `<i class="fas ${item.icon}"></i>` : ''}
+              ${item.icon ? navIcon(item.icon) : ''}
               <span>${item.label}</span>
             </button>
           `;
@@ -122,6 +149,7 @@
     }
 
     function positionDropdown(wrap) {
+      return; // accordion layout — no flyout positioning
       const btn = wrap.querySelector('.tab-btn');
       const dd = wrap.querySelector('.nav-dropdown');
       if (!btn || !dd) return;

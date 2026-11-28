@@ -86,3 +86,10 @@
   .eye-shell.mobile-drawer-open .eye-sidebar{transform:translateX(0)}
 }
 .eye-shell.mobile-drawer-open::before{content:'';position:fixed;inset:0;background:rgba(17,17,17,.35);z-index:899}
+
+.eye-sidebar .nav-dropdown{position:static;top:auto;left:auto;margin:0;min-width:0;max-width:none;background:transparent;border:none;border-radius:0;box-shadow:none;padding:0;transform:none;opacity:1;visibility:visible;pointer-events:auto}
+.eye-sidebar .nav-dropdown-inner{display:block}
+.eye-sidebar .tab-btn:hover,.eye-sidebar .nav-tab-item:hover>.tab-btn{background:rgba(201,218,63,.22);color:#fff}
+.eye-sidebar .tab-btn:hover .nav-ico,.eye-sidebar .nav-tab-item:hover>.tab-btn .nav-ico{color:var(--lime,#E6F27A)}
+.eye-sidebar .nav-dropdown-item:hover{background:rgba(201,218,63,.22);color:#fff}
+.eye-sidebar .nav-tab-item.open>.nav-dropdown{visibility:visible !important}

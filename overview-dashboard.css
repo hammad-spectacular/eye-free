@@ -1813,3 +1813,24 @@ body {
     border:1px solid var(--line,#D5D9D0);box-shadow:0 8px 24px rgba(17,17,17,.15);white-space:nowrap;z-index:960;pointer-events:none;
   }
 }
+
+/* ===== Rail dropdown: kill legacy flyout styles from shared-nav.css ===== */
+.eye-sidebar .nav-dropdown{
+  position:static;top:auto;left:auto;margin:0;min-width:0;max-width:none;
+  background:transparent;border:none;border-radius:0;box-shadow:none;
+  padding:0;transform:none;opacity:1;visibility:visible;pointer-events:auto;
+}
+.eye-sidebar .nav-dropdown-inner{display:block}
+/* deep-lime hover, one accent everywhere in the rail */
+.eye-sidebar .tab-btn:hover,.eye-sidebar .nav-tab-item:hover>.tab-btn{background:rgba(201,218,63,.22);color:#fff}
+.eye-sidebar .tab-btn:hover i:first-child,.eye-sidebar .nav-tab-item:hover>.tab-btn i:first-child{color:var(--lime,#E6F27A)}
+.eye-sidebar .nav-dropdown-item:hover{background:rgba(201,218,63,.22);color:#fff}
+.eye-sidebar .nav-dropdown-item:hover i{color:var(--lime,#E6F27A)}
+
+/* inline SVG rail icons */
+.eye-sidebar .tab-btn .nav-ico{width:20px;height:20px;flex-shrink:0;color:var(--rail-icon,#9A9A94);display:inline-block}
+.eye-sidebar .tab-btn:hover .nav-ico,.eye-sidebar .nav-tab-item:hover>.tab-btn .nav-ico{color:#fff}
+.eye-sidebar .tab-btn.active .nav-ico{color:var(--lime,#E6F27A)}
+.eye-sidebar .nav-dropdown-item .nav-ico{width:14px;height:14px;color:var(--rail-icon,#9A9A94)}
+.nav-ico.nav-arrow{margin-left:auto;font-size:10px;transition:transform .2s,opacity .15s;opacity:.7}
+.eye-sidebar .nav-tab-item.open>.nav-dropdown{visibility:visible !important}
