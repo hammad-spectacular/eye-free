@@ -19,15 +19,15 @@
         <nav class="finance-nav" aria-label="Finance pages">
           <a href="/finance-overview.html">Overview</a><a href="/finance-payroll.html">Payroll</a><a href="/finance-expenses.html" aria-current="page">Expenses</a>
         </nav>
-        <a class="finance-button finance-button-small" href="/admin.html">&larr; Back to dashboard</a>
-        <button class="finance-icon-button" data-finance-theme type="button" aria-label="Switch theme" title="Switch theme"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        
+        
       </div>
     </header>
 
     <main class="finance-main">
       <div id="financeAlert" class="finance-alert" role="status"></div>
       <section class="finance-page-heading">
-        <div><p class="finance-kicker">Finance / School costs</p><h1>Every bill has a place.</h1><p>Separate planned estimates from approved obligations and actual cash payments.</p></div>
+        <div><h1>Finance</h1></div>
         <div class="finance-heading-actions">
           <label class="finance-field"><span class="finance-caption">Branch scope</span><select id="branchFilter" class="finance-control" aria-label="Branch scope"></select></label>
           <label class="finance-field"><span class="finance-caption">Period</span><input id="expenseMonth" class="finance-control" type="month"></label>
@@ -128,7 +128,7 @@
         <div class="finance-inline" style="margin-top:14px"><span class="finance-caption" id="analyticsSummary"></span></div>
       </section>
     </main>
-    <footer class="finance-footer">Obligations and estimates do not change the cash balance. Only posted payments become ledger transactions.</footer>
+    
   </div>
 
   <dialog class="finance-dialog" id="expensePaymentDialog">
