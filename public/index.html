@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Khattack Academy — Sign in</title>
+<title>Khattack Academy: school management</title>
+<meta name="description" content="Khattack Academy — attendance, fees, exams and staff for your whole school in one place.">
+<meta name="theme-color" content="#0A0A0A">
+<meta property="og:title" content="Khattack Academy: school management">
+<meta property="og:description" content="Attendance, fees, exams and staff in one place.">
+<meta property="og:type" content="website">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -14,6 +19,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="./design-tokens.css">
 <link rel="stylesheet" href="./auth-hero.css">
+<link rel="stylesheet" href="./landing.css">
 <style>
 .hero-title {
   font-size: clamp(2rem, min(4.2vw, 6.5vh), 3.5rem);
@@ -138,6 +144,9 @@
   .hero-main {
     padding-bottom: 76px;
   }
+  .scroll-cue {
+    bottom: 72px;
+  }
 }
 
 @media (max-height: 780px) and (min-width: 768px) {
@@ -148,121 +157,289 @@
     margin-bottom: 20px;
   }
 }
+
+@media (max-height: 700px) {
+  .scroll-cue {
+    display: none;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="hero-panel">
-  <!-- Clipped Sage-Mint + Lime Glow Layer -->
-  <div class="hero-glow-layer" aria-hidden="true">
-    <div class="hero-glow-top"></div>
-    <div class="hero-glow-bottom"></div>
-    <div class="hero-glow-lime"></div>
-    <div class="hero-scrim"></div>
-  </div>
+<a class="skip-link" href="#about">Skip to content</a>
 
-  <!-- Sticky Floating Pill Navbar -->
-  <header class="hero-nav-wrap">
-    <nav class="hero-nav" aria-label="Primary navigation">
-      <a href="/" class="nav-brand">
-        <span class="nav-logo-mark" aria-hidden="true">KA</span>
-        <span class="nav-brand-name">Khattack Academy</span>
-      </a>
-      <a href="./register.html" class="nav-register-btn">
-        <span class="label-full">Register your school</span>
-        <span class="label-short">Register</span>
-      </a>
+<!-- Floating glass pill navbar (fixed, always visible) -->
+<header class="site-nav">
+  <nav class="nav-pill" aria-label="Primary navigation">
+    <a href="#top" class="nav-brand">
+      <span class="nav-logo-mark" aria-hidden="true">KA</span>
+      <span class="nav-brand-name">Khattack Academy</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="#about" class="nav-link">About</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it works</a>
+    </div>
+
+    <a href="./register.html" class="nav-register-btn">
+      <span class="label-full">Register your school</span>
+      <span class="label-short">Register</span>
+    </a>
+
+    <button type="button" class="nav-menu-btn" id="navMenuBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+      <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <nav aria-label="Mobile navigation">
+      <a href="#about" class="mobile-link">About</a>
+      <a href="#features" class="mobile-link">Features</a>
+      <a href="#how" class="mobile-link">How it works</a>
+      <a href="./register.html" class="mobile-register">Register your school</a>
     </nav>
-  </header>
+  </div>
+</header>
 
-  <!-- Corner Symbolic Nodes -->
-  <div class="corner-node left tl" aria-hidden="true">
-    <div class="corner-circle">
-      <i class="fas fa-eye"></i>
-      <span class="corner-connector"></span>
+<main>
+  <!-- ============ HERO + LOGIN ============ -->
+  <section class="hero-panel" id="top" aria-labelledby="hero-title">
+    <!-- Clipped Sage-Mint + Lime Glow Layer -->
+    <div class="hero-glow-layer" aria-hidden="true">
+      <div class="hero-glow-top"></div>
+      <div class="hero-glow-bottom"></div>
+      <div class="hero-glow-lime"></div>
+      <div class="hero-scrim"></div>
     </div>
-    <span class="corner-label">Insight</span>
-  </div>
-  <div class="corner-node right tr" title="Secure sign-in" aria-label="Secure sign-in">
-    <div class="corner-circle">
-      <i class="fas fa-lock" aria-hidden="true"></i>
-      <span class="corner-connector" aria-hidden="true"></span>
-    </div>
-    <span class="corner-label">Secure</span>
-  </div>
-  <div class="corner-node left bl" aria-hidden="true">
-    <div class="corner-circle">
-      <i class="fas fa-wallet"></i>
-      <span class="corner-connector"></span>
-    </div>
-    <span class="corner-label">Fees</span>
-  </div>
-  <div class="corner-node right br" aria-hidden="true">
-    <div class="corner-circle">
-      <i class="fas fa-users"></i>
-      <span class="corner-connector"></span>
-    </div>
-    <span class="corner-label">Staff</span>
-  </div>
 
-  <!-- Vertically Centered Hero Block -->
-  <main class="hero-main">
-    <h1 class="hero-title">Run your whole school from one place</h1>
-    <p class="hero-sub">Attendance, fees, exams and staff in one place.</p>
+    <!-- Corner Symbolic Nodes -->
+    <div class="corner-node left tl" aria-hidden="true">
+      <div class="corner-circle">
+        <i class="fas fa-eye"></i>
+        <span class="corner-connector"></span>
+      </div>
+      <span class="corner-label">Insight</span>
+    </div>
+    <div class="corner-node right tr" title="Secure sign-in" aria-label="Secure sign-in">
+      <div class="corner-circle">
+        <i class="fas fa-lock" aria-hidden="true"></i>
+        <span class="corner-connector" aria-hidden="true"></span>
+      </div>
+      <span class="corner-label">Secure</span>
+    </div>
+    <div class="corner-node left bl" aria-hidden="true">
+      <div class="corner-circle">
+        <i class="fas fa-wallet"></i>
+        <span class="corner-connector"></span>
+      </div>
+      <span class="corner-label">Fees</span>
+    </div>
+    <div class="corner-node right br" aria-hidden="true">
+      <div class="corner-circle">
+        <i class="fas fa-users"></i>
+        <span class="corner-connector"></span>
+      </div>
+      <span class="corner-label">Staff</span>
+    </div>
 
-    <section class="auth-card" aria-label="Sign in">
-      <form id="loginForm" novalidate>
-        <div class="form-group">
-          <label for="fullId" class="sr-only">Full ID</label>
-          <div class="input-wrap">
-            <input type="text" id="fullId" class="auth-input" placeholder="Full ID" autocomplete="username" inputmode="text" required>
+    <!-- Vertically Centered Hero Block -->
+    <div class="hero-main">
+      <h1 class="hero-title" id="hero-title" tabindex="-1">Run your whole school from one place</h1>
+      <p class="hero-sub">Attendance, fees, exams and staff in one place.</p>
+
+      <section class="auth-card" aria-label="Sign in">
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="fullId" class="sr-only">Full ID</label>
+            <div class="input-wrap">
+              <input type="text" id="fullId" class="auth-input" placeholder="Full ID" autocomplete="username" inputmode="text" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="sr-only">Password</label>
+            <div class="input-wrap">
+              <input type="password" id="password" class="auth-input" placeholder="Password" autocomplete="current-password" required>
+              <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="forgot-row">
+            <a href="/forgot-password.html" class="forgot-link">Forgot password?</a>
+          </div>
+
+          <div class="auth-msg error" id="loginError" role="alert">
+            <i class="fas fa-circle-exclamation" style="margin-top:2px;flex-shrink:0;" aria-hidden="true"></i>
+            <span id="loginErrorText"></span>
+          </div>
+
+          <button type="submit" class="lime-pill-btn" id="loginBtn">
+            Sign in
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <a href="#about" class="scroll-cue">
+      <span>Learn more</span>
+      <span class="cue-ring" aria-hidden="true"><i class="fas fa-chevron-down"></i></span>
+    </a>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="lp-section" id="about" aria-labelledby="about-title">
+    <div class="lp-inner lp-split">
+      <div class="reveal">
+        <h2 class="lp-title" id="about-title" tabindex="-1">One simple system for your whole school</h2>
+        <p class="lp-lead">Khattack Academy brings students, staff, fees and exams into one place, so nothing gets lost between registers, spreadsheets and chat groups.</p>
+      </div>
+      <div class="about-card reveal" aria-hidden="true">
+        <div class="chip"><i class="fas fa-user-graduate"></i><span>Students</span></div>
+        <div class="chip"><i class="fas fa-chalkboard-teacher"></i><span>Staff</span></div>
+        <div class="chip"><i class="fas fa-wallet"></i><span>Fees</span></div>
+        <div class="gauge-row">
+          <span class="gauge" style="width:72%"></span>
+          <span class="gauge" style="width:46%"></span>
+          <span class="gauge lime" style="width:88%"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="lp-section lp-panel" id="features" aria-labelledby="features-title">
+    <div class="lp-inner">
+      <h2 class="lp-title reveal" id="features-title" tabindex="-1">Everything your school runs on</h2>
+      <div class="feature-grid">
+        <article class="feature-card feature-card--lime reveal">
+          <span class="feature-icon"><i class="fas fa-user-graduate" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Students</h3>
+          <p class="feature-desc">Admissions, classes and records.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Attendance</h3>
+          <p class="feature-desc">Mark it daily. See it at a glance.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-wallet" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Fees</h3>
+          <p class="feature-desc">Vouchers, receipts and what is due.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-file-pen" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Exams &amp; results</h3>
+          <p class="feature-desc">Datesheets, marks and result cards.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-chalkboard-teacher" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Staff &amp; payroll</h3>
+          <p class="feature-desc">Teachers, assignments and salaries.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-comment-dots" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Complaints</h3>
+          <p class="feature-desc">Track and resolve issues.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon"><i class="fas fa-code-branch" aria-hidden="true"></i></span>
+          <h3 class="feature-title">Branches</h3>
+          <p class="feature-desc">Manage every campus in one account.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="lp-section" id="how" aria-labelledby="how-title">
+    <div class="lp-inner">
+      <h2 class="lp-title reveal" id="how-title" tabindex="-1">Up and running in three steps</h2>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">1</span>
+          <div>
+            <h3>Register your school</h3>
+            <p>Send us your details and we set up your account.</p>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="password" class="sr-only">Password</label>
-          <div class="input-wrap">
-            <input type="password" id="password" class="auth-input" placeholder="Password" autocomplete="current-password" required>
-            <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
-              <i class="fas fa-eye" aria-hidden="true"></i>
-            </button>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">2</span>
+          <div>
+            <h3>Add classes, students and staff</h3>
+            <p>Build your school structure in minutes.</p>
           </div>
         </div>
-
-        <div class="forgot-row">
-          <a href="/forgot-password.html" class="forgot-link">Forgot password?</a>
+        <div class="step reveal">
+          <span class="step-num" aria-hidden="true">3</span>
+          <div>
+            <h3>Mark attendance and collect fees</h3>
+            <p>Run daily operations from one place.</p>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <div class="auth-msg error" id="loginError" role="alert">
-          <i class="fas fa-circle-exclamation" style="margin-top:2px;flex-shrink:0;" aria-hidden="true"></i>
-          <span id="loginErrorText"></span>
-        </div>
+  <!-- ============ QUOTE ============ -->
+  <section class="lp-section lp-quote" aria-label="Quote">
+    <div class="lp-inner">
+      <span class="quote-line" aria-hidden="true"></span>
+      <blockquote class="quote-text reveal">
+        <p>An investment in knowledge pays the best interest.</p>
+      </blockquote>
+    </div>
+  </section>
 
-        <button type="submit" class="lime-pill-btn" id="loginBtn">
-          Sign in
-        </button>
-      </form>
-    </section>
-  </main>
-</div>
+  <!-- ============ CLOSING CTA ============ -->
+  <section class="lp-section lp-panel" id="register-cta" aria-labelledby="cta-title">
+    <div class="lp-inner cta-inner">
+      <h2 class="lp-title reveal" id="cta-title" tabindex="-1">Ready to bring your school together?</h2>
+      <a href="./register.html" class="lime-pill-btn cta-btn reveal">Register your school</a>
+      <a href="#top" class="cta-signin reveal" id="ctaSignIn">Already registered? Sign in</a>
+    </div>
+  </section>
+</main>
+
+<footer class="lp-footer" id="contact">
+  <div class="lp-inner footer-inner">
+    <a href="#top" class="nav-brand">
+      <span class="nav-logo-mark" aria-hidden="true">KA</span>
+      <span class="nav-brand-name">Khattack Academy</span>
+    </a>
+    <p class="footer-year" id="footerYear"></p>
+  </div>
+</footer>
+
+<button type="button" class="back-to-top" id="backToTop" aria-label="Back to top">
+  <i class="fas fa-arrow-up" aria-hidden="true"></i>
+</button>
 
 <script src="/api-config.js"></script>
 <script src="/auth-utils.js"></script>
 <script>
 (function () {
-  const fullIdInput = document.getElementById('fullId');
-  const pwInput = document.getElementById('password');
-  const loginBtn = document.getElementById('loginBtn');
-  const toggleBtn = document.getElementById('togglePw');
-  const errorEl = document.getElementById('loginError');
-  const errorTextEl = document.getElementById('loginErrorText');
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Login form (unchanged logic) ---------- */
+  var fullIdInput = document.getElementById('fullId');
+  var pwInput = document.getElementById('password');
+  var loginBtn = document.getElementById('loginBtn');
+  var toggleBtn = document.getElementById('togglePw');
+  var errorEl = document.getElementById('loginError');
+  var errorTextEl = document.getElementById('loginErrorText');
 
   if (window.innerWidth >= 1024) {
     fullIdInput.focus();
   }
 
   toggleBtn.addEventListener('click', function () {
-    const isPassword = pwInput.type === 'password';
+    var isPassword = pwInput.type === 'password';
     pwInput.type = isPassword ? 'text' : 'password';
     this.querySelector('i').className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
     this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
@@ -275,8 +452,8 @@
 
   document.getElementById('loginForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    const fullId = fullIdInput.value.trim();
-    const password = pwInput.value;
+    var fullId = fullIdInput.value.trim();
+    var password = pwInput.value;
 
     errorEl.classList.remove('show');
     errorTextEl.textContent = '';
@@ -301,7 +478,9 @@
     loginBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Signing in...';
 
     try {
-      const { ok, data } = await apiLogin(fullId, password);
+      var result = await apiLogin(fullId, password);
+      var ok = result.ok;
+      var data = result.data;
 
       if (!ok) {
         showError((data && data.error) ? data.error : 'Wrong Full ID or password. Try again.');
@@ -315,7 +494,7 @@
       if (data.token) setAuthToken(data.token);
       window.location.replace(data.redirect_url || '/');
     } catch (err) {
-      const msg = (typeof formatFetchError === 'function')
+      var msg = (typeof formatFetchError === 'function')
         ? formatFetchError(err)
         : "Can't reach the server. Check your connection.";
       showError(msg);
@@ -323,6 +502,135 @@
       loginBtn.textContent = 'Sign in';
     }
   });
+
+  /* ---------- Mobile menu ---------- */
+  var menuBtn = document.getElementById('navMenuBtn');
+  var mobileMenu = document.getElementById('mobileMenu');
+  var menuIcon = menuBtn.querySelector('i');
+
+  function setMenu(open) {
+    mobileMenu.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    menuIcon.className = open ? 'fas fa-xmark' : 'fas fa-bars';
+    document.body.classList.toggle('menu-locked', open);
+  }
+
+  menuBtn.addEventListener('click', function () {
+    setMenu(mobileMenu.hidden);
+  });
+
+  mobileMenu.addEventListener('click', function (e) {
+    if (e.target.closest('a')) setMenu(false);
+  });
+
+  document.addEventListener('pointerdown', function (e) {
+    if (mobileMenu.hidden) return;
+    if (!e.target.closest('.site-nav')) setMenu(false);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !mobileMenu.hidden) {
+      setMenu(false);
+      menuBtn.focus();
+    }
+  });
+
+  window.addEventListener('pagehide', function () {
+    document.body.classList.remove('menu-locked');
+  });
+
+  /* ---------- Anchor focus + smooth handling ---------- */
+  function focusSectionTarget(hash) {
+    var target = document.querySelector(hash);
+    if (!target) return;
+    var heading = target.querySelector('h1, h2, [tabindex="-1"]') || target;
+    if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+    heading.focus({ preventScroll: true });
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      var hash = link.getAttribute('href');
+      if (hash.length < 2) return;
+      setTimeout(function () { focusSectionTarget(hash); }, reduceMotion ? 0 : 650);
+    });
+  });
+
+  /* CTA "Sign in" link: scroll to top and focus Full ID */
+  var ctaSignIn = document.getElementById('ctaSignIn');
+  ctaSignIn.addEventListener('click', function () {
+    setTimeout(function () { fullIdInput.focus(); }, reduceMotion ? 0 : 650);
+  });
+
+  /* ---------- Active nav link highlighting ---------- */
+  var navMap = {};
+  document.querySelectorAll('.nav-links a[href^="#"], .mobile-menu a[href^="#"]').forEach(function (a) {
+    var href = a.getAttribute('href');
+    (navMap[href] = navMap[href] || []).push(a);
+  });
+
+  function setActive(hash) {
+    Object.keys(navMap).forEach(function (key) {
+      var active = key === hash;
+      navMap[key].forEach(function (a) { a.classList.toggle('active', active); });
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    var sectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) setActive('#' + entry.target.id);
+      });
+    }, { rootMargin: '-35% 0px -55% 0px' });
+
+    ['about', 'features', 'how', 'contact'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) sectionObserver.observe(el);
+    });
+  }
+
+  /* ---------- Scroll reveal (once, content visible without JS) ---------- */
+  document.documentElement.classList.add('js');
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function (el) { revealObserver.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- Back to top ---------- */
+  var backToTop = document.getElementById('backToTop');
+  var ticking = false;
+
+  function updateBackToTop() {
+    backToTop.classList.toggle('show', window.scrollY > 600);
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      window.requestAnimationFrame(updateBackToTop);
+      ticking = true;
+    }
+  }, { passive: true });
+  updateBackToTop();
+
+  backToTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    document.getElementById('hero-title').focus({ preventScroll: true });
+  });
+
+  /* ---------- Footer year ---------- */
+  document.getElementById('footerYear').textContent = '© ' + new Date().getFullYear() + ' Khattack Academy';
 })();
 </script>
 </body>
